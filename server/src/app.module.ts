@@ -8,6 +8,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { HealthModule } from './modules/health/health.module';
+import { OrganizationsModule } from './modules/organizations/organizations.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { HealthModule } from './modules/health/health.module';
     UsersModule,
     SessionsModule,
     AuthModule,
+    OrganizationsModule,
     HealthModule,
   ],
 })

@@ -20,7 +20,7 @@ export const publicRoutes: RouteObject[] = [
       { path: paths.sessionExpired, element: <pages.SessionExpired /> },
       { path: paths.twoFactor, element: <pages.TwoFactor /> },
       { path: paths.workspaces, element: <pages.Workspaces /> },
-      { path: paths.newWorkspace, element: <pages.Placeholder title="Create workspace" /> },
+      { path: paths.newWorkspace, element: <pages.CreateWorkspace /> },
       { path: paths.error, element: <pages.Error /> },
     ],
   },

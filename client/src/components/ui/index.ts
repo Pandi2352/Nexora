@@ -1,4 +1,5 @@
 export { Avatar } from './Avatar'
+export { Badge, type BadgeProps, type BadgeVariant } from './Badge'
 export { Button } from './Button'
 export { buttonVariants, type ButtonSize, type ButtonVariant } from './button-variants'
 export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './Card'

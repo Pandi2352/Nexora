@@ -3,15 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { Avatar, Dropdown, DropdownItem, DropdownLabel, DropdownSeparator } from '@/components/ui'
 import { paths, workspaceSegments as s } from '@/config/paths'
 import { useAuth } from '@/context/auth/auth-context'
+import { useWorkspace } from '@/context/workspace/workspace-context'
 import { mockMembershipRole, mockUser } from '@/data/user'
-import { mockWorkspaces } from '@/data/workspaces'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 
 export function UserMenu() {
   const slug = useWorkspaceSlug()
   const navigate = useNavigate()
   const { user, logout } = useAuth()
-  const workspace = mockWorkspaces.find((w) => w.slug === slug)
+  const { workspaces } = useWorkspace()
+  const workspace = workspaces.find((w) => w.slug === slug)
+  const roleName = workspace?.role || mockMembershipRole
 
   const displayName = user?.name || mockUser.name
   const displayEmail = user?.email || mockUser.email
@@ -33,7 +35,7 @@ export function UserMenu() {
             <span className="block text-sm font-medium leading-4 text-slate-900">
               {displayName}
             </span>
-            <span className="block text-[11px] text-slate-500">{mockMembershipRole}</span>
+            <span className="block text-[11px] capitalize text-slate-500">{roleName}</span>
           </span>
           <ChevronDown className="hidden size-4 text-slate-400 lg:block" aria-hidden />
         </>
@@ -42,8 +44,8 @@ export function UserMenu() {
       <div className="px-3 py-2">
         <p className="truncate text-sm font-semibold text-slate-900">{displayName}</p>
         <p className="truncate text-xs text-slate-500">{displayEmail}</p>
-        <p className="mt-1 text-xs text-slate-500">
-          {mockMembershipRole} · {workspace?.name}
+        <p className="mt-1 text-xs capitalize text-slate-500">
+          {roleName} · {workspace?.name || 'Workspace'}
         </p>
       </div>
       <DropdownSeparator />
@@ -56,7 +58,7 @@ export function UserMenu() {
       />
       <DropdownSeparator />
       <DropdownLabel>Switch workspace</DropdownLabel>
-      {mockWorkspaces.map((w) => (
+      {workspaces.map((w) => (
         <DropdownItem
           key={w.id}
           to={paths.workspace(w.slug)}

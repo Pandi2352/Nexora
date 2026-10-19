@@ -1,16 +1,26 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Outlet } from 'react-router-dom'
 import { SkipLink } from '@/components/common/SkipLink'
 import { TopNavigationProgress } from '@/components/common/TopNavigationProgress'
 import { Navbar } from '@/components/layout/navbar/Navbar'
 import { Sidebar } from '@/components/layout/sidebar/Sidebar'
 import { SidebarProvider } from '@/context/sidebar/SidebarProvider'
+import { useWorkspace } from '@/context/workspace/workspace-context'
 import { useScrollTopOnNavigate } from '@/hooks/useScrollTopOnNavigate'
+import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 
 /** Workspace shell: sidebar + navbar, page content renders in <Outlet />. */
 export function AppLayout() {
   const mainRef = useRef<HTMLElement>(null)
   useScrollTopOnNavigate(mainRef)
+  const slug = useWorkspaceSlug()
+  const { switchWorkspace } = useWorkspace()
+
+  useEffect(() => {
+    if (slug) {
+      switchWorkspace(slug)
+    }
+  }, [slug, switchWorkspace])
 
   return (
     <SidebarProvider>

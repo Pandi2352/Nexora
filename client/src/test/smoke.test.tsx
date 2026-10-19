@@ -61,6 +61,14 @@ test('public route uses auth layout without sidebar', async () => {
   root.unmount()
 })
 
+test('/workspaces/new renders create workspace page', async () => {
+  const root = await renderAt('/workspaces/new')
+  expect(document.querySelector('aside')).toBeNull()
+  expect(document.body.textContent).toContain('Create workspace')
+  expect(document.querySelector('input[placeholder*="Acme Operations"]')).not.toBeNull()
+  root.unmount()
+})
+
 test.each([
   ['/error/403', 'Error 403', 'Access denied'],
   ['/error/503', 'Error 503', 'Service unavailable'],

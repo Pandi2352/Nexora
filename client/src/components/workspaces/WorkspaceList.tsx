@@ -1,24 +1,48 @@
-import { ChevronRight } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import { Avatar } from '@/components/ui'
-import { paths } from '@/config/paths'
+import { useState } from 'react'
+import { Search } from 'lucide-react'
+import { Input } from '@/components/ui'
 import type { Workspace } from '@/types/workspace'
+import { WorkspaceCard } from './WorkspaceCard'
 
-export function WorkspaceList({ workspaces }: { workspaces: Workspace[] }) {
+export interface WorkspaceListProps {
+  workspaces: Workspace[]
+}
+
+export function WorkspaceList({ workspaces }: WorkspaceListProps) {
+  const [query, setQuery] = useState('')
+
+  const filtered = workspaces.filter(
+    (w) =>
+      w.name.toLowerCase().includes(query.toLowerCase()) ||
+      w.slug.toLowerCase().includes(query.toLowerCase()),
+  )
+
   return (
-    <ul className="divide-y divide-slate-200 rounded-md border border-slate-200 bg-white">
-      {workspaces.map((workspace) => (
-        <li key={workspace.id}>
-          <Link
-            to={paths.workspace(workspace.slug)}
-            className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-600"
-          >
-            <Avatar name={workspace.name} shape="square" />
-            <span className="flex-1 text-sm font-medium text-slate-900">{workspace.name}</span>
-            <ChevronRight className="size-4 text-slate-400" aria-hidden />
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <div className="space-y-4">
+      {workspaces.length > 2 && (
+        <div className="relative">
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search workspaces by name or slug..."
+            icon={Search}
+            size="md"
+          />
+        </div>
+      )}
+
+      {filtered.length === 0 ? (
+        <div className="rounded-md border border-slate-200 bg-white p-8 text-center">
+          <p className="text-sm font-medium text-slate-700">No workspaces match your search</p>
+          <p className="mt-1 text-xs text-slate-500">Try a different query or clear the filter.</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2.5">
+          {filtered.map((workspace) => (
+            <WorkspaceCard key={workspace.id} workspace={workspace} />
+          ))}
+        </div>
+      )}
+    </div>
   )
 }

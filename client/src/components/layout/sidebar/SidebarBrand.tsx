@@ -4,14 +4,15 @@ import { Logo } from '@/components/common/Logo'
 import { IconButton } from '@/components/ui'
 import { paths } from '@/config/paths'
 import { useSidebar } from '@/context/sidebar/sidebar-context'
-import { mockWorkspaces } from '@/data/workspaces'
+import { useWorkspace } from '@/context/workspace/workspace-context'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { cn } from '@/lib/cn'
 
 export function SidebarBrand() {
   const { isCollapsed, closeMobile } = useSidebar()
   const slug = useWorkspaceSlug()
-  const workspace = mockWorkspaces.find((w) => w.slug === slug)
+  const { workspaces } = useWorkspace()
+  const workspace = workspaces.find((w) => w.slug === slug)
 
   return (
     <div
