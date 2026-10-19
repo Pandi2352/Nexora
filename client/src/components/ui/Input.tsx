@@ -29,6 +29,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const generatedId = useId()
     const inputId = customId || generatedId
     const errorId = `${inputId}-error`
+    const warningId = `${inputId}-warning`
     const hintId = `${inputId}-hint`
     const successId = `${inputId}-success`
 
@@ -58,6 +59,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const describedBy = [
       externalDescribedBy,
       error ? errorId : undefined,
+      warning ? warningId : undefined,
       success ? successId : undefined,
       hint ? hintId : undefined,
     ].filter(Boolean).join(' ') || undefined
@@ -163,9 +165,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
         <InputFeedback
           error={error}
+          warning={warning}
           success={success}
           hint={hint}
           errorId={errorId}
+          warningId={warningId}
           successId={successId}
           hintId={hintId}
           showCount={showCount}

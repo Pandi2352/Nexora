@@ -28,8 +28,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     void initAuth()
 
+    const onSessionExpired = () => {
+      if (isMounted) setUser(null)
+    }
+    window.addEventListener('nexora:session-expired', onSessionExpired)
+
     return () => {
       isMounted = false
+      window.removeEventListener('nexora:session-expired', onSessionExpired)
     }
   }, [])
 

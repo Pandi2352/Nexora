@@ -1,6 +1,7 @@
 import { Link, Outlet } from 'react-router-dom'
 import { Logo } from '@/components/common/Logo'
 import { AuthCornerIllustrations } from '@/components/auth/AuthCornerIllustrations'
+import { TopNavigationProgress } from '@/components/common/TopNavigationProgress'
 
 /**
  * Authentication layout for Login, Register, Forgot Password, and Reset Password.
@@ -9,6 +10,7 @@ import { AuthCornerIllustrations } from '@/components/auth/AuthCornerIllustratio
 export function AuthLayout() {
   return (
     <div className="relative flex h-dvh max-h-dvh w-full flex-col justify-between overflow-hidden bg-white select-none">
+      <TopNavigationProgress />
       {/* Corner illustrations directly in bottom corners without any spacing */}
       <AuthCornerIllustrations />
 

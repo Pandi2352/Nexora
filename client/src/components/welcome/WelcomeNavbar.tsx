@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/common/Logo'
 
+import { pages } from '@/routes/pages'
+
 interface WelcomeNavbarProps {
   onOpenSignUp: () => void
 }
@@ -24,6 +26,7 @@ export function WelcomeNavbar({ onOpenSignUp }: WelcomeNavbarProps) {
       <div className="flex items-center gap-3">
         <Link
           to="/login"
+          onMouseEnter={() => pages.Login.preload?.()}
           className="text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-1.5 transition cursor-pointer"
         >
           Sign in

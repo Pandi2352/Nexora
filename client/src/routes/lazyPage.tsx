@@ -1,19 +1,38 @@
-import { lazy, Suspense, type ComponentType } from 'react'
-import { PageSkeleton } from '@/components/common/PageSkeleton'
+import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
+import { RouteLoader } from '@/components/common/RouteLoader'
+
+export interface PreloadableComponent<P extends object> {
+  (props: P): ReactNode
+  preload: () => Promise<{ default: ComponentType<P> }>
+}
 
 /**
- * Code-splits a page. The Suspense boundary sits inside the layout's <Outlet />,
- * so the sidebar and navbar stay visible while the page chunk loads.
- * Call at module level (in routes/pages.ts), never inside a component.
+ * Code-splits a page with factory caching and preloading support to eliminate
+ * jarring transition flashes when navigating between routes.
  */
-export function lazyPage<P extends object>(factory: () => Promise<{ default: ComponentType<P> }>) {
-  const LazyComponent = lazy(factory)
+export function lazyPage<P extends object>(
+  factory: () => Promise<{ default: ComponentType<P> }>,
+  fallback: ReactNode = <RouteLoader compact message="Loading..." />,
+): PreloadableComponent<P> {
+  let cachedPromise: Promise<{ default: ComponentType<P> }> | null = null
 
-  return function LazyPage(props: P) {
+  const load = () => {
+    if (!cachedPromise) {
+      cachedPromise = factory()
+    }
+    return cachedPromise
+  }
+
+  const LazyComponent = lazy(load)
+
+  function LazyPage(props: P) {
     return (
-      <Suspense fallback={<PageSkeleton />}>
+      <Suspense fallback={fallback}>
         <LazyComponent {...props} />
       </Suspense>
     )
   }
+
+  LazyPage.preload = load
+  return LazyPage
 }

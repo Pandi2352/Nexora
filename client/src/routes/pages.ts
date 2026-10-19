@@ -12,4 +12,8 @@ export const pages = {
   VerifyEmail: lazyPage(() => import('@/pages/auth/VerifyEmailPage')),
   ForgotPassword: lazyPage(() => import('@/pages/auth/ForgotPasswordPage')),
   ResetPassword: lazyPage(() => import('@/pages/auth/ResetPasswordPage')),
+  AcceptInvitation: lazyPage(() => import('@/pages/auth/AcceptInvitationPage')),
+  OAuthCallback: lazyPage(() => import('@/pages/auth/OAuthCallbackPage')),
+  SessionExpired: lazyPage(() => import('@/pages/auth/SessionExpiredPage')),
+  TwoFactor: lazyPage(() => import('@/pages/auth/TwoFactorPage')),
 }

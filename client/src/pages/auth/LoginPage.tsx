@@ -37,43 +37,24 @@ export function LoginPage() {
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/workspaces'
 
   const handleEmailSubmit = (e: FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setEmailError(null)
-
+    e.preventDefault(); setError(null); setEmailError(null)
     const trimmed = email.trim()
-    if (!trimmed) {
-      setEmailError('Work email is required')
-      return
+    if (!trimmed) return setEmailError('Work email is required')
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      return setEmailError('Please enter a valid work email address')
     }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(trimmed)) {
-      setEmailError('Please enter a valid work email address')
-      return
-    }
-
     setStep('password')
   }
 
   const handlePasswordSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setPasswordError(null)
-
-    if (!password) {
-      setPasswordError('Password is required')
-      return
-    }
-
+    e.preventDefault(); setError(null); setPasswordError(null)
+    if (!password) return setPasswordError('Password is required')
     setIsSubmitting(true)
-
     try {
       await login({ email: email.trim(), password })
       navigate(from, { replace: true })
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
+      const msg = (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
         'Invalid email or password. Please try again.'
       setError(msg)
     } finally {
@@ -89,9 +70,7 @@ export function LoginPage() {
             {step === 'email' ? 'Sign in to continue' : 'Enter your password'}
           </CardTitle>
           <CardDescription className="text-xs sm:text-sm">
-            {step === 'email'
-              ? 'Access your Nexora OS workspaces and tools'
-              : 'Enter your password to complete sign in'}
+            {step === 'email' ? 'Access your Nexora OS workspaces and tools' : 'Enter your password to complete sign in'}
           </CardDescription>
         </CardHeader>
 
@@ -138,22 +117,28 @@ export function LoginPage() {
             </form>
           ) : (
             <form noValidate onSubmit={handlePasswordSubmit} className="space-y-4">
-              {/* Confirmed email chip with edit button */}
-              <div className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
-                <span className="font-medium text-slate-800 truncate">{email}</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStep('email')
-                    setPassword('')
-                    setPasswordError(null)
-                    setError(null)
-                  }}
-                  className="ml-2 font-semibold text-brand-600 hover:text-brand-700 hover:underline cursor-pointer shrink-0"
-                >
-                  Change
-                </button>
-              </div>
+              <Input
+                label="Email"
+                type="email"
+                icon={Mail}
+                value={email}
+                readOnly
+                cornerAction={
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStep('email')
+                      setPassword('')
+                      setPasswordError(null)
+                      setError(null)
+                    }}
+                    className="font-medium text-brand-600 hover:text-brand-700 hover:underline cursor-pointer text-xs"
+                  >
+                    Change
+                  </button>
+                }
+                inputClassName="bg-slate-50 text-slate-700 border-slate-200 cursor-not-allowed select-none font-medium"
+              />
 
               <Input
                 label="Password"
@@ -191,6 +176,9 @@ export function LoginPage() {
           Don't have an account?{' '}
           <Link
             to="/register"
+            onMouseEnter={() => {
+              void import('@/pages/auth/RegisterPage')
+            }}
             className="ml-1 font-semibold text-brand-600 hover:text-brand-700 hover:underline cursor-pointer"
           >
             Sign up for an account

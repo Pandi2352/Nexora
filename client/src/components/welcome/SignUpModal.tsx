@@ -5,6 +5,8 @@ import { Logo } from '@/components/common/Logo'
 import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons'
 import { Button, Input } from '@/components/ui'
 
+import { pages } from '@/routes/pages'
+
 interface SignUpModalProps {
   isOpen: boolean
   onClose: () => void
@@ -19,6 +21,10 @@ export function SignUpModal({ isOpen, onClose, initialEmail = '' }: SignUpModalP
   const [email, setEmail] = useState(initialEmail)
   const [emailError, setEmailError] = useState<string | null>(null)
   const navigate = useNavigate()
+
+  if (isOpen) {
+    pages.Register.preload?.()
+  }
 
   if (!isOpen) return null
 
@@ -38,12 +44,11 @@ export function SignUpModal({ isOpen, onClose, initialEmail = '' }: SignUpModalP
       return
     }
 
-    onClose()
+    // Directly navigate to register without unmounting modal first, preventing underlying page flash
     navigate('/register', { state: { prefilledEmail: trimmed } })
   }
 
   const handleSocialSelect = () => {
-    onClose()
     navigate('/register', { state: { prefilledEmail: email.trim() } })
   }
 
@@ -114,7 +119,9 @@ export function SignUpModal({ isOpen, onClose, initialEmail = '' }: SignUpModalP
           Already have Nexora?{' '}
           <Link
             to="/login"
-            onClick={onClose}
+            onMouseEnter={() => {
+              void import('@/pages/auth/LoginPage')
+            }}
             className="font-semibold text-brand-600 hover:text-brand-700 hover:underline cursor-pointer"
           >
             Log in

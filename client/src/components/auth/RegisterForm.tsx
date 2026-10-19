@@ -159,6 +159,9 @@ export function RegisterForm({
         Already have an account?{' '}
         <Link
           to="/login"
+          onMouseEnter={() => {
+            void import('@/pages/auth/LoginPage')
+          }}
           className="ml-1 font-semibold text-brand-600 hover:text-brand-700 hover:underline cursor-pointer"
         >
           Sign in

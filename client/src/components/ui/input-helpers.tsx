@@ -1,5 +1,5 @@
 import type { ComponentType, InputHTMLAttributes, ReactNode } from 'react'
-import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2, X } from 'lucide-react'
+import { AlertCircle, AlertTriangle, CheckCircle2, Eye, EyeOff, Loader2, X } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
 export type InputSize = 'sm' | 'md' | 'lg'
@@ -35,23 +35,19 @@ export const inputSizeClasses: Record<InputSize, string> = {
   md: 'min-h-10 px-3 text-sm',
   lg: 'min-h-11 px-3.5 text-sm sm:text-base',
 }
+
 export const inputStatusClasses: Record<InputStatus, string> = {
   error: 'border-red-400 focus:border-red-500',
   success: 'border-emerald-400 focus:border-emerald-500',
   warning: 'border-amber-400 focus:border-amber-500',
   default: 'border-slate-300 hover:border-slate-400 focus:border-brand-500',
 }
+
 interface InputAdornmentProps {
-  isLoading?: boolean
-  allowClear?: boolean
-  hasValue?: boolean
-  disabled?: boolean
-  readOnly?: boolean
-  canToggle?: boolean
-  passwordVisible?: boolean
-  onTogglePassword?: () => void
-  onClear?: () => void
-  EndIcon?: ComponentType<{ className?: string }>
+  isLoading?: boolean; allowClear?: boolean; hasValue?: boolean
+  disabled?: boolean; readOnly?: boolean; canToggle?: boolean
+  passwordVisible?: boolean; onTogglePassword?: () => void
+  onClear?: () => void; EndIcon?: ComponentType<{ className?: string }>
 }
 
 export function InputAdornment({
@@ -69,7 +65,6 @@ export function InputAdornment({
   return (
     <div className="absolute inset-y-0 right-0 flex items-center pr-2.5 gap-1">
       {isLoading && <Loader2 className="size-4 animate-spin text-brand-600" aria-label="Loading" />}
-
       {allowClear && hasValue && !disabled && !readOnly && !isLoading && (
         <button
           type="button"
@@ -80,7 +75,6 @@ export function InputAdornment({
           <X className="size-3.5" />
         </button>
       )}
-
       {canToggle && !isLoading && (
         <button
           type="button"
@@ -93,7 +87,6 @@ export function InputAdornment({
           {passwordVisible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
         </button>
       )}
-
       {EndIcon && !canToggle && !isLoading && (
         <span className="pointer-events-none text-slate-400 pr-1">
           <EndIcon className="size-4" />
@@ -105,9 +98,11 @@ export function InputAdornment({
 
 interface InputFeedbackProps {
   error?: string | string[] | ReactNode
+  warning?: string | ReactNode
   success?: string | ReactNode
   hint?: string | ReactNode
   errorId: string
+  warningId?: string
   successId: string
   hintId: string
   showCount?: boolean
@@ -117,7 +112,6 @@ interface InputFeedbackProps {
 
 export function PasswordStrengthBar({ password }: { password?: string }) {
   if (!password) return null
-
   const len = password.length
   let score = (len >= 8 ? 1 : 0) + (/[A-Z]/.test(password) && /[a-z]/.test(password) ? 1 : 0) +
     (/[0-9]/.test(password) ? 1 : 0) + (/[^A-Za-z0-9]/.test(password) ? 1 : 0)
@@ -135,10 +129,7 @@ export function PasswordStrengthBar({ password }: { password?: string }) {
     <div className="flex items-center gap-2 mt-1 select-none">
       <div className="flex-1 grid grid-cols-4 gap-1 h-1">
         {[1, 2, 3, 4].map((step) => (
-          <div
-            key={step}
-            className={cn('h-full rounded-full transition-colors duration-150', step <= score ? cfg.bar : 'bg-slate-200')}
-          />
+          <div key={step} className={cn('h-full rounded-full transition-colors duration-150', step <= score ? cfg.bar : 'bg-slate-200')} />
         ))}
       </div>
       <span className={cn('text-[10px] font-normal tracking-wide', cfg.text)}>{cfg.label}</span>
@@ -148,16 +139,18 @@ export function PasswordStrengthBar({ password }: { password?: string }) {
 
 export function InputFeedback({
   error,
+  warning,
   success,
   hint,
   errorId,
+  warningId,
   successId,
   hintId,
   showCount,
   currentLength = 0,
   maxLength,
 }: InputFeedbackProps) {
-  if (!error && !success && !hint && !showCount) return null
+  if (!error && !warning && !success && !hint && !showCount) return null
 
   return (
     <div className="flex items-start justify-between gap-2 min-h-[1.25rem]">
@@ -178,15 +171,18 @@ export function InputFeedback({
               </p>
             )}
           </div>
+        ) : warning ? (
+          <p id={warningId} className="flex items-center gap-1.5 text-xs text-amber-600 font-normal">
+            <AlertTriangle className="size-3.5 shrink-0 stroke-[1.5]" aria-hidden="true" />
+            <span>{warning}</span>
+          </p>
         ) : success ? (
           <p id={successId} className="flex items-center gap-1.5 text-xs text-emerald-600 font-normal">
             <CheckCircle2 className="size-3.5 shrink-0 stroke-[1.5]" aria-hidden="true" />
             <span>{success}</span>
           </p>
         ) : hint ? (
-          <p id={hintId} className="text-xs text-slate-500 font-normal leading-normal">
-            {hint}
-          </p>
+          <p id={hintId} className="text-xs text-slate-500 font-normal leading-normal">{hint}</p>
         ) : null}
       </div>
 

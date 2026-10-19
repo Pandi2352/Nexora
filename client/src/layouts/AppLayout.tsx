@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { Outlet } from 'react-router-dom'
 import { SkipLink } from '@/components/common/SkipLink'
+import { TopNavigationProgress } from '@/components/common/TopNavigationProgress'
 import { Navbar } from '@/components/layout/navbar/Navbar'
 import { Sidebar } from '@/components/layout/sidebar/Sidebar'
 import { SidebarProvider } from '@/context/sidebar/SidebarProvider'
@@ -14,6 +15,7 @@ export function AppLayout() {
   return (
     <SidebarProvider>
       <SkipLink />
+      <TopNavigationProgress />
       <div className="flex h-dvh overflow-hidden">
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
@@ -24,7 +26,7 @@ export function AppLayout() {
             tabIndex={-1}
             className="custom-scrollbar flex-1 overflow-y-auto focus:outline-none"
           >
-            <div className="w-full px-4 py-6 sm:px-6">
+            <div className="flex min-h-full flex-col w-full px-4 py-6 sm:px-6">
               <Outlet />
             </div>
           </main>

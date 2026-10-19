@@ -4,6 +4,8 @@ import { ArrowRight, Building2, CheckCircle2, Mail, ShieldCheck, Zap } from 'luc
 import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons'
 import { Button, Input } from '@/components/ui'
 
+import { pages } from '@/routes/pages'
+
 interface WelcomeHeroProps {
   onStartSignUp?: (email: string) => void
 }
@@ -12,7 +14,7 @@ interface WelcomeHeroProps {
  * Hero section for the Welcome page with inline email signup shortcut and value propositions.
  * Submitting directly navigates to /register with the prefilled email.
  */
-export function WelcomeHero({ onStartSignUp }: WelcomeHeroProps) {
+export function WelcomeHero({ onStartSignUp: _onStartSignUp }: WelcomeHeroProps) {
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState<string | null>(null)
   const navigate = useNavigate()
@@ -33,12 +35,16 @@ export function WelcomeHero({ onStartSignUp }: WelcomeHeroProps) {
       return
     }
 
-    onStartSignUp?.(trimmed)
+    // Direct navigation without opening or blinking the modal popup
     navigate('/register', { state: { prefilledEmail: trimmed } })
   }
 
   const handleSocialSelect = () => {
     navigate('/register', { state: { prefilledEmail: email.trim() } })
+  }
+
+  const handleFocus = () => {
+    pages.Register.preload?.()
   }
 
   return (
@@ -103,6 +109,7 @@ export function WelcomeHero({ onStartSignUp }: WelcomeHeroProps) {
                 value={email}
                 error={emailError}
                 hint="Use a work email to find teammates and get access to Nexora AI"
+                onFocus={handleFocus}
                 onChange={(e) => {
                   setEmail(e.target.value)
                   if (emailError) setEmailError(null)
