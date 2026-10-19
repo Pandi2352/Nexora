@@ -13,6 +13,7 @@ export const pages = {
   Teams: lazyPage(() => import('@/pages/teams/TeamsPage')),
   Roles: lazyPage(() => import('@/pages/roles/RolesPage')),
   GeneralSettings: lazyPage(() => import('@/pages/settings/GeneralSettingsPage')),
+  SecuritySettings: lazyPage(() => import('@/pages/settings/SecuritySettingsPage')),
   Activity: lazyPage(() => import('@/pages/activity/ActivityPage')),
   Account: lazyPage(() => import('@/pages/account/AccountPage')),
   Login: lazyPage(() => import('@/pages/auth/LoginPage')),

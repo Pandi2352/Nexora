@@ -28,6 +28,7 @@ export const workspaceRoutes: RouteObject = {
             { path: workspaceSegments.settingsMembers, element: <pages.Members /> },
             { path: workspaceSegments.settingsTeams, element: <pages.Teams /> },
             { path: workspaceSegments.settingsRoles, element: <pages.Roles /> },
+            { path: workspaceSegments.settingsSecurity, element: <pages.SecuritySettings /> },
             { path: workspaceSegments.activity, element: <pages.Activity /> },
             { path: workspaceSegments.account, element: <pages.Account /> },
             ...Object.values(workspaceSegments)
@@ -38,6 +39,7 @@ export const workspaceRoutes: RouteObject = {
                   segment !== workspaceSegments.settingsMembers &&
                   segment !== workspaceSegments.settingsTeams &&
                   segment !== workspaceSegments.settingsRoles &&
+                  segment !== workspaceSegments.settingsSecurity &&
                   segment !== workspaceSegments.activity &&
                   segment !== workspaceSegments.account,
               )

@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ShieldCheck } from 'lucide-react'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
-import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Input } from '@/components/ui'
+import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Input, OtpInput } from '@/components/ui'
 
 export default function TwoFactorPage() {
   useDocumentTitle('Two-Factor Verification — Nexora OS')
@@ -57,17 +57,43 @@ export default function TwoFactorPage() {
 
         <CardContent className="space-y-4">
           <form id="two-factor-form" onSubmit={handleSubmit} className="space-y-3.5">
-            <Input
-              label={useBackup ? 'Emergency Recovery Code' : '6-Digit Verification Code'}
-              placeholder={useBackup ? 'XXXX-XXXX-XXXX' : '123456'}
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              error={error ?? undefined}
-              maxLength={useBackup ? 19 : 6}
-              autoFocus
-              className="text-center tracking-widest font-mono text-base"
-              required
-            />
+            {useBackup ? (
+              <Input
+                label="Emergency Recovery Code"
+                placeholder="XXXX-XXXX-XXXX"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                error={error ?? undefined}
+                maxLength={19}
+                autoFocus
+                className="text-center tracking-widest font-mono text-base"
+                required
+              />
+            ) : (
+              <div className="space-y-2">
+                <label className="block text-center text-xs font-medium text-slate-700">
+                  Enter 6-Digit Code
+                </label>
+                <OtpInput
+                  value={code}
+                  onChange={(val) => {
+                    setCode(val)
+                    if (error) setError(null)
+                  }}
+                  onComplete={() => {
+                    // Auto-submit form when 6 digits are complete
+                    document.getElementById('two-factor-form')?.dispatchEvent(
+                      new Event('submit', { cancelable: true, bubbles: true }),
+                    )
+                  }}
+                  error={Boolean(error)}
+                  disabled={isSubmitting}
+                />
+                {error && (
+                  <p className="text-center text-xs text-red-600 mt-2">{error}</p>
+                )}
+              </div>
+            )}
           </form>
         </CardContent>
 

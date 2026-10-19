@@ -5,7 +5,6 @@ import { authService } from '@/services/auth.service'
 import { useAuth } from '@/context/auth/auth-context'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { getApiErrorMessage } from '@/lib/errors'
-import { OtpInput } from '@/components/auth/OtpInput'
 import {
   Button,
   Card,
@@ -14,6 +13,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  OtpInput,
 } from '@/components/ui'
 
 export function VerifyEmailPage() {

@@ -11,6 +11,7 @@ import {
   LifeBuoy,
   Settings,
   SquareCheckBig,
+  Users,
   Workflow,
 } from 'lucide-react'
 import { workspaceSegments as s } from '@/config/paths'
@@ -78,21 +79,28 @@ export const navigation: NavSection[] = [
     label: 'Admin',
     items: [
       {
+        id: 'user-management',
+        label: 'User Management',
+        icon: Users,
+        children: [
+          { id: 'members', label: 'Members', segment: s.settingsMembers },
+          { id: 'teams', label: 'Teams', segment: s.settingsTeams },
+          { id: 'roles', label: 'Roles', segment: s.settingsRoles },
+          { id: 'security', label: 'Authentication & Security', segment: s.settingsSecurity },
+        ],
+      },
+      {
         id: 'settings',
         label: 'Settings',
         icon: Settings,
         children: [
           { id: 'general', label: 'General', segment: s.settingsGeneral },
-          { id: 'members', label: 'Members', segment: s.settingsMembers },
-          { id: 'teams', label: 'Teams', segment: s.settingsTeams },
-          { id: 'roles', label: 'Roles', segment: s.settingsRoles },
           {
             id: 'settings-notifications',
             label: 'Notifications',
             segment: s.settingsNotifications,
           },
           { id: 'integrations', label: 'Integrations', segment: s.settingsIntegrations },
-          { id: 'security', label: 'Security', segment: s.settingsSecurity },
         ],
       },
     ],

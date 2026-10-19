@@ -79,6 +79,14 @@ test('workspace settings/roles renders roles and permissions page in outlet', as
   root.unmount()
 })
 
+test('workspace settings/security renders authentication and security page in outlet', async () => {
+  const root = await renderAt('/workspace/acme/settings/security')
+  expect(document.querySelector('aside#app-sidebar')).not.toBeNull()
+  expect(document.querySelector('main h1')?.textContent).toBe('Authentication & Security')
+  expect(document.body.textContent).toContain('Email Verification & 6-Digit OTP')
+  root.unmount()
+})
+
 test('workspace activity renders activity and audit page in outlet', async () => {
   const root = await renderAt('/workspace/acme/activity')
   expect(document.querySelector('aside#app-sidebar')).not.toBeNull()
