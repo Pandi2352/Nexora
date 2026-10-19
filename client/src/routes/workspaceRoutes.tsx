@@ -24,8 +24,13 @@ export const workspaceRoutes: RouteObject = {
           children: [
             { index: true, element: <Navigate to={workspaceSegments.dashboard} replace /> },
             { path: workspaceSegments.settingsMembers, element: <pages.Members /> },
+            { path: workspaceSegments.account, element: <pages.Account /> },
             ...Object.values(workspaceSegments)
-              .filter((segment) => segment !== workspaceSegments.settingsMembers)
+              .filter(
+                (segment) =>
+                  segment !== workspaceSegments.settingsMembers &&
+                  segment !== workspaceSegments.account,
+              )
               .map(placeholder),
             { path: '*', element: <pages.NotFound /> },
           ],

@@ -9,6 +9,7 @@ export const pages = {
   Workspaces: lazyPage(() => import('@/pages/workspaces/WorkspacesPage')),
   CreateWorkspace: lazyPage(() => import('@/pages/workspaces/CreateWorkspacePage')),
   Members: lazyPage(() => import('@/pages/members/MembersPage')),
+  Account: lazyPage(() => import('@/pages/account/AccountPage')),
   Login: lazyPage(() => import('@/pages/auth/LoginPage')),
   Register: lazyPage(() => import('@/pages/auth/RegisterPage')),
   VerifyEmail: lazyPage(() => import('@/pages/auth/VerifyEmailPage')),

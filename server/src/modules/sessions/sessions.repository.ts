@@ -42,6 +42,15 @@ export class SessionsRepository {
       .exec();
   }
 
+  async revokeOthersForUser(userId: string, currentSessionId: string): Promise<void> {
+    await this.sessionModel
+      .updateMany(
+        { userId, _id: { $ne: currentSessionId }, isRevoked: false },
+        { $set: { isRevoked: true } },
+      )
+      .exec();
+  }
+
   async findActiveByUserId(userId: string): Promise<SessionDocument[]> {
     return this.sessionModel.find({ userId, isRevoked: false }).sort({ createdAt: -1 }).exec();
   }

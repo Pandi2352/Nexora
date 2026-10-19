@@ -47,6 +47,10 @@ export class SessionsService {
     return this.sessionsRepository.revokeAllForUser(userId);
   }
 
+  async revokeOthersForUser(userId: string, currentSessionId: string): Promise<void> {
+    return this.sessionsRepository.revokeOthersForUser(userId, currentSessionId);
+  }
+
   async getActiveUserSessions(userId: string): Promise<SessionDocument[]> {
     return this.sessionsRepository.findActiveByUserId(userId);
   }
