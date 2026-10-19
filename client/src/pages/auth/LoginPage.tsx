@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Lock, Mail } from 'lucide-react'
 import { useAuth } from '@/context/auth/auth-context'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { getApiErrorMessage } from '@/lib/errors'
 import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons'
 import {
   Button,
@@ -54,9 +55,7 @@ export function LoginPage() {
       await login({ email: email.trim(), password })
       navigate(from, { replace: true })
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        'Invalid email or password. Please try again.'
-      setError(msg)
+      setError(getApiErrorMessage(err, 'Invalid email or password. Please try again.'))
     } finally {
       setIsSubmitting(false)
     }

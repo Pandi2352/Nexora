@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { CheckCircle2, Mail, XCircle } from 'lucide-react'
 import { authService } from '@/services/auth.service'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { getApiErrorMessage } from '@/lib/errors'
 import {
   Button,
   Card,
@@ -41,10 +42,9 @@ export function VerifyEmailPage() {
       .then(() => {
         if (isMounted) setIsSuccess(true)
       })
-      .catch((err: any) => {
+      .catch((err: unknown) => {
         if (isMounted) {
-          const msg = err.response?.data?.message || 'Verification token is invalid or has expired.'
-          setError(msg)
+          setError(getApiErrorMessage(err, 'Verification token is invalid or has expired.'))
         }
       })
       .finally(() => {

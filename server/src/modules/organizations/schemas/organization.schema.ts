@@ -15,7 +15,7 @@ export class Organization extends BaseDocument {
   @Prop({ type: String, required: true, trim: true, maxlength: 100 })
   name: string;
 
-  @Prop({ type: String, required: true, unique: true, lowercase: true, trim: true })
+  @Prop({ type: String, required: true, lowercase: true, trim: true })
   slug: string;
 
   @Prop({ type: String, trim: true })
@@ -27,14 +27,13 @@ export class Organization extends BaseDocument {
   @Prop({ type: String, default: 'en-US', trim: true })
   locale: string;
 
-  @Prop({ type: String, required: true, index: true })
+  @Prop({ type: String, required: true })
   ownerId: string;
 
   @Prop({
     type: String,
     enum: Object.values(OrganizationStatus),
     default: OrganizationStatus.Active,
-    index: true,
   })
   status: OrganizationStatus;
 

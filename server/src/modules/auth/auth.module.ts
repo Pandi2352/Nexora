@@ -12,13 +12,13 @@ import { AuthTokenService } from './auth-token.service';
 
 @Module({
   imports: [
-    JwtModule.register({}),
+    JwtModule.register({ global: true }),
     MongooseModule.forFeature([{ name: EmailToken.name, schema: EmailTokenSchema }]),
     UsersModule,
     SessionsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, AuthTokenService, EmailTokenRepository, JwtAuthGuard],
-  exports: [AuthService, AuthTokenService, JwtAuthGuard],
+  exports: [AuthService, AuthTokenService, JwtAuthGuard, JwtModule],
 })
 export class AuthModule {}

@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { CheckCircle2, Lock, XCircle } from 'lucide-react'
 import { authService } from '@/services/auth.service'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { getApiErrorMessage } from '@/lib/errors'
 import {
   Button,
   Card,
@@ -84,9 +85,8 @@ export function ResetPasswordPage() {
     try {
       await authService.resetPassword({ token, newPassword: password })
       setIsSuccess(true)
-    } catch (err: any) {
-      const msg = err.response?.data?.message || 'Password reset token is invalid or has expired.'
-      setError(msg)
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, 'Password reset token is invalid or has expired.'))
     } finally {
       setIsSubmitting(false)
     }

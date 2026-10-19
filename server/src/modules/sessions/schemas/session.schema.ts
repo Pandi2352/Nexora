@@ -9,7 +9,7 @@ export class Session extends BaseDocument {
   @Prop({ type: String, required: true, index: true })
   userId: string;
 
-  @Prop({ type: String, required: true, index: true })
+  @Prop({ type: String, required: true })
   refreshTokenHash: string;
 
   @Prop({ type: String, trim: true })

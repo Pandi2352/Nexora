@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAuth } from '@/context/auth/auth-context'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { getApiErrorMessage } from '@/lib/errors'
 import { RegisterForm } from '@/components/auth/RegisterForm'
 import { RegisterSuccess } from '@/components/auth/RegisterSuccess'
 
@@ -29,10 +30,7 @@ export function RegisterPage() {
       setSubmittedEmail(data.email)
       setIsSuccess(true)
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        'Failed to create account. Please check your credentials and try again.'
-      setError(msg)
+      setError(getApiErrorMessage(err, 'Failed to create account. Please try again.'))
     } finally {
       setIsSubmitting(false)
     }
