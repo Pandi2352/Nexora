@@ -27,8 +27,8 @@ export function ResetPasswordPage() {
 
   if (!token) {
     return (
-      <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center py-12">
-        <Card className="w-full max-w-md text-center">
+      <div className="w-full max-w-sm sm:max-w-md">
+        <Card className="w-full text-center bg-white/95 backdrop-blur-xs">
           <CardHeader>
             <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-red-50 text-red-600">
               <XCircle className="size-6" />
@@ -51,14 +51,33 @@ export function ResetPasswordPage() {
     )
   }
 
+  const [passwordError, setPasswordError] = useState<string | null>(null)
+  const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null)
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
+    setPasswordError(null)
+    setConfirmPasswordError(null)
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match')
-      return
+    let hasError = false
+    if (!password) {
+      setPasswordError('New password is required')
+      hasError = true
+    } else if (password.length < 8) {
+      setPasswordError('Password must be at least 8 characters')
+      hasError = true
     }
+
+    if (!confirmPassword) {
+      setConfirmPasswordError('Please confirm your new password')
+      hasError = true
+    } else if (password && confirmPassword !== password) {
+      setConfirmPasswordError('Passwords do not match')
+      hasError = true
+    }
+
+    if (hasError) return
 
     setIsSubmitting(true)
 
@@ -75,8 +94,8 @@ export function ResetPasswordPage() {
 
   if (isSuccess) {
     return (
-      <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center py-12">
-        <Card className="w-full max-w-md text-center">
+      <div className="w-full max-w-sm sm:max-w-md">
+        <Card className="w-full text-center bg-white/95 backdrop-blur-xs">
           <CardHeader>
             <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
               <CheckCircle2 className="size-6" />
@@ -99,14 +118,14 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center py-12">
-      <Card className="w-full max-w-md">
+    <div className="w-full max-w-sm sm:max-w-md">
+      <Card className="w-full bg-white/95 backdrop-blur-xs">
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Set new password</CardTitle>
           <CardDescription>Create a strong password for your Nexora OS account</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form noValidate onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700">
                 {error}
@@ -117,10 +136,15 @@ export function ResetPasswordPage() {
               type="password"
               icon={Lock}
               required
+              showPasswordStrength
               placeholder="Minimum 8 characters"
               hint="Must contain uppercase, lowercase, and a number or special character"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              error={passwordError}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                if (passwordError) setPasswordError(null)
+              }}
               disabled={isSubmitting}
             />
             <Input
@@ -130,7 +154,11 @@ export function ResetPasswordPage() {
               required
               placeholder="Re-enter password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              error={confirmPasswordError}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value)
+                if (confirmPasswordError) setConfirmPasswordError(null)
+              }}
               disabled={isSubmitting}
             />
             <Button type="submit" variant="primary" className="w-full" loading={isSubmitting}>

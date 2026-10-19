@@ -25,6 +25,7 @@ export function VerifyEmailPage() {
   const [error, setError] = useState<string | null>(null)
 
   const [resendEmail, setResendEmail] = useState('')
+  const [resendEmailError, setResendEmailError] = useState<string | null>(null)
   const [resendStatus, setResendStatus] = useState<string | null>(null)
   const [isResending, setIsResending] = useState(false)
 
@@ -57,11 +58,25 @@ export function VerifyEmailPage() {
 
   const handleResend = async (e: React.FormEvent) => {
     e.preventDefault()
+    setResendEmailError(null)
+
+    const trimmed = resendEmail.trim()
+    if (!trimmed) {
+      setResendEmailError('Email address is required')
+      return
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(trimmed)) {
+      setResendEmailError('Please enter a valid work email address')
+      return
+    }
+
     setIsResending(true)
     setResendStatus(null)
 
     try {
-      const msg = await authService.resendVerification(resendEmail)
+      const msg = await authService.resendVerification(trimmed)
       setResendStatus(msg)
     } catch {
       setResendStatus('If an account exists, a link was sent.')
@@ -71,8 +86,8 @@ export function VerifyEmailPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center py-12">
-      <Card className="w-full max-w-md text-center">
+    <div className="w-full max-w-sm sm:max-w-md">
+      <Card className="w-full text-center bg-white/95 backdrop-blur-xs">
         {isLoading ? (
           <CardContent className="space-y-4 py-12">
             <Skeleton className="mx-auto size-12 rounded-full" />
@@ -109,7 +124,7 @@ export function VerifyEmailPage() {
               <CardDescription>{error}</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleResend} className="space-y-3 text-left">
+              <form noValidate onSubmit={handleResend} className="space-y-3 text-left">
                 <p className="text-xs font-medium text-slate-700">Need a new verification link?</p>
                 <Input
                   type="email"
@@ -117,7 +132,11 @@ export function VerifyEmailPage() {
                   required
                   placeholder="Enter your registered email"
                   value={resendEmail}
-                  onChange={(e) => setResendEmail(e.target.value)}
+                  error={resendEmailError}
+                  onChange={(e) => {
+                    setResendEmail(e.target.value)
+                    if (resendEmailError) setResendEmailError(null)
+                  }}
                   disabled={isResending}
                 />
                 <Button

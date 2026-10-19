@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Lock, Mail } from 'lucide-react'
 import { useAuth } from '@/context/auth/auth-context'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { SocialAuthButtons } from '@/components/auth/SocialAuthButtons'
 import {
   Button,
   Card,
@@ -14,29 +15,66 @@ import {
   Input,
 } from '@/components/ui'
 
+/**
+ * Atlassian/Jira-style two-step Sign In flow:
+ * Step 1: Work email input + social providers
+ * Step 2: Selected email pill + password input + "Can't log in?" recovery
+ */
 export function LoginPage() {
   useDocumentTitle('Sign In — Nexora OS')
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
+  const [step, setStep] = useState<'email' | 'password'>('email')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [emailError, setEmailError] = useState<string | null>(null)
+  const [passwordError, setPasswordError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/workspaces'
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleEmailSubmit = (e: FormEvent) => {
     e.preventDefault()
     setError(null)
+    setEmailError(null)
+
+    const trimmed = email.trim()
+    if (!trimmed) {
+      setEmailError('Work email is required')
+      return
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(trimmed)) {
+      setEmailError('Please enter a valid work email address')
+      return
+    }
+
+    setStep('password')
+  }
+
+  const handlePasswordSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setPasswordError(null)
+
+    if (!password) {
+      setPasswordError('Password is required')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
-      await login({ email, password })
+      await login({ email: email.trim(), password })
       navigate(from, { replace: true })
-    } catch (err: any) {
-      const msg = err.response?.data?.message || 'Invalid email or password'
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
+        'Invalid email or password. Please try again.'
       setError(msg)
     } finally {
       setIsSubmitting(false)
@@ -44,63 +82,118 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl">Sign in to Nexora OS</CardTitle>
-          <CardDescription>Enter your email and password to access your workspaces</CardDescription>
+    <div className="w-full max-w-sm sm:max-w-md">
+      <Card className="w-full bg-white/95 backdrop-blur-xs">
+        <CardHeader className="text-center pb-4 pt-6">
+          <CardTitle className="text-xl sm:text-2xl font-bold">
+            {step === 'email' ? 'Sign in to continue' : 'Enter your password'}
+          </CardTitle>
+          <CardDescription className="text-xs sm:text-sm">
+            {step === 'email'
+              ? 'Access your Nexora OS workspaces and tools'
+              : 'Enter your password to complete sign in'}
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700">
-                {error}
-              </div>
-            )}
-            <Input
-              label="Email address"
-              type="email"
-              icon={Mail}
-              required
-              autoComplete="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isSubmitting}
-            />
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-slate-700">Password</label>
-                <Link
-                  to="/forgot-password"
-                  className="text-xs font-medium text-primary-600 hover:text-primary-700 hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
+
+        <CardContent className="space-y-4 px-6 sm:px-8 pb-6">
+          {error && (
+            <div
+              role="alert"
+              className="rounded-md border border-red-200 bg-red-50 p-2.5 text-xs text-red-700"
+            >
+              {error}
+            </div>
+          )}
+
+          {step === 'email' ? (
+            <form noValidate onSubmit={handleEmailSubmit} className="space-y-4">
               <Input
+                label="Work email"
+                type="email"
+                icon={Mail}
+                required
+                autoFocus
+                autoComplete="email"
+                placeholder="you@company.com"
+                value={email}
+                error={emailError}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  if (emailError) setEmailError(null)
+                }}
+              />
+
+              <Button type="submit" variant="primary" className="w-full">
+                Continue
+              </Button>
+
+              <div className="relative my-4 text-center text-xs text-slate-400">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200" />
+                </div>
+                <span className="relative bg-white px-2.5 text-slate-500">Or continue with</span>
+              </div>
+
+              <SocialAuthButtons />
+            </form>
+          ) : (
+            <form noValidate onSubmit={handlePasswordSubmit} className="space-y-4">
+              {/* Confirmed email chip with edit button */}
+              <div className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+                <span className="font-medium text-slate-800 truncate">{email}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep('email')
+                    setPassword('')
+                    setPasswordError(null)
+                    setError(null)
+                  }}
+                  className="ml-2 font-semibold text-brand-600 hover:text-brand-700 hover:underline cursor-pointer shrink-0"
+                >
+                  Change
+                </button>
+              </div>
+
+              <Input
+                label="Password"
                 type="password"
                 icon={Lock}
                 required
+                autoFocus
                 autoComplete="current-password"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                error={passwordError}
+                cornerAction={
+                  <Link
+                    to="/forgot-password"
+                    className="font-medium text-brand-600 hover:text-brand-700 hover:underline cursor-pointer"
+                  >
+                    Can't log in?
+                  </Link>
+                }
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  if (passwordError) setPasswordError(null)
+                }}
                 disabled={isSubmitting}
               />
-            </div>
-            <Button type="submit" variant="primary" className="w-full" loading={isSubmitting}>
-              Sign In
-            </Button>
-          </form>
+
+              <Button type="submit" variant="primary" className="w-full" loading={isSubmitting}>
+                Sign In
+              </Button>
+            </form>
+          )}
         </CardContent>
-        <CardFooter className="justify-center border-t border-slate-100 pt-4 text-xs text-slate-500">
+
+        <CardFooter className="justify-center border-t border-slate-100 py-3.5 text-xs text-slate-500">
           Don't have an account?{' '}
           <Link
             to="/register"
-            className="ml-1 font-semibold text-primary-600 hover:text-primary-700 hover:underline"
+            className="ml-1 font-semibold text-brand-600 hover:text-brand-700 hover:underline cursor-pointer"
           >
-            Create an account
+            Sign up for an account
           </Link>
         </CardFooter>
       </Card>

@@ -1,6 +1,6 @@
 import { X } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { LogoMark } from '@/components/common/Logo'
+import { Logo } from '@/components/common/Logo'
 import { IconButton } from '@/components/ui'
 import { paths } from '@/config/paths'
 import { useSidebar } from '@/context/sidebar/sidebar-context'
@@ -25,15 +25,11 @@ export function SidebarBrand() {
         aria-label="Nexora OS home"
         className="flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
       >
-        <LogoMark />
-        {!isCollapsed && (
-          <span className="min-w-0">
-            <span className="block truncate text-sm font-bold tracking-tight text-slate-900">
-              Nexora <span className="text-brand-600">OS</span>
-            </span>
-            <span className="block truncate text-xs text-slate-500">{workspace?.name}</span>
-          </span>
-        )}
+        <Logo
+          size="md"
+          variant={isCollapsed ? 'mark' : 'full'}
+          subtitle={workspace?.name}
+        />
       </Link>
       <IconButton aria-label="Close navigation" onClick={closeMobile} className="ml-auto lg:hidden">
         <X className="size-5" />

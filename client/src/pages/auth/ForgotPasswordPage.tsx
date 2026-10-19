@@ -18,15 +18,30 @@ export function ForgotPasswordPage() {
   useDocumentTitle('Forgot Password — Nexora OS')
 
   const [email, setEmail] = useState('')
+  const [emailError, setEmailError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    setEmailError(null)
+
+    const trimmed = email.trim()
+    if (!trimmed) {
+      setEmailError('Email address is required')
+      return
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(trimmed)) {
+      setEmailError('Please enter a valid work email address')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
-      await authService.forgotPassword(email)
+      await authService.forgotPassword(trimmed)
     } finally {
       setIsSuccess(true)
       setIsSubmitting(false)
@@ -34,8 +49,8 @@ export function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center py-12">
-      <Card className="w-full max-w-md">
+    <div className="w-full max-w-sm sm:max-w-md">
+      <Card className="w-full bg-white/95 backdrop-blur-xs">
         {isSuccess ? (
           <>
             <CardHeader className="text-center">
@@ -65,7 +80,7 @@ export function ForgotPasswordPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form noValidate onSubmit={handleSubmit} className="space-y-4">
                 <Input
                   label="Email address"
                   type="email"
@@ -73,7 +88,11 @@ export function ForgotPasswordPage() {
                   required
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  error={emailError}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    if (emailError) setEmailError(null)
+                  }}
                   disabled={isSubmitting}
                 />
                 <Button type="submit" variant="primary" className="w-full" loading={isSubmitting}>

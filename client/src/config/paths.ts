@@ -33,6 +33,7 @@ export type WorkspaceSegment = (typeof workspaceSegments)[keyof typeof workspace
 
 export const paths = {
   home: '/',
+  welcome: '/welcome',
   login: '/login',
   register: '/register',
   verifyEmail: '/verify-email',
