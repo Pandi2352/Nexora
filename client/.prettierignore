@@ -1,0 +1,6 @@
+dist
+node_modules
+coverage
+package-lock.json
+# User-owned theme file: never auto-format
+src/index.css

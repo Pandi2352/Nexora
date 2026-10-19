@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "sourceMap": true,
+    "declaration": false,
+    "removeComments": true,
+    "incremental": true,
+    /* Inside dist/ so `deleteOutDir` also clears it; otherwise tsc skips emitting after a clean */
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "skipLibCheck": true,
+
+    /* NestJS dependency injection needs decorator metadata */
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    /* Type checking */
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Path alias */
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}
