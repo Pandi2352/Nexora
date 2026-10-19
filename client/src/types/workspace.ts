@@ -24,3 +24,7 @@ export interface UpdateWorkspacePayload {
   timezone?: string
   locale?: string
 }
+
+export interface TransferOwnershipPayload {
+  newOwnerUserId: string
+}

@@ -101,4 +101,14 @@ export class OrganizationsRepository {
     const res = await this.membershipModel.deleteOne({ organizationId, userId }).exec();
     return (res.deletedCount ?? 0) > 0;
   }
+
+  async updateMembershipRole(
+    organizationId: string,
+    userId: string,
+    role: MembershipRole,
+  ): Promise<MembershipDocument | null> {
+    return this.membershipModel
+      .findOneAndUpdate({ organizationId, userId }, { $set: { role } }, { new: true })
+      .exec();
+  }
 }

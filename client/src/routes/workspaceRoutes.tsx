@@ -23,6 +23,7 @@ export const workspaceRoutes: RouteObject = {
           errorElement: <RouteErrorPage />,
           children: [
             { index: true, element: <Navigate to={workspaceSegments.dashboard} replace /> },
+            { path: workspaceSegments.settingsGeneral, element: <pages.GeneralSettings /> },
             { path: workspaceSegments.settingsMembers, element: <pages.Members /> },
             { path: workspaceSegments.settingsTeams, element: <pages.Teams /> },
             { path: workspaceSegments.settingsRoles, element: <pages.Roles /> },
@@ -30,6 +31,7 @@ export const workspaceRoutes: RouteObject = {
             ...Object.values(workspaceSegments)
               .filter(
                 (segment) =>
+                  segment !== workspaceSegments.settingsGeneral &&
                   segment !== workspaceSegments.settingsMembers &&
                   segment !== workspaceSegments.settingsTeams &&
                   segment !== workspaceSegments.settingsRoles &&

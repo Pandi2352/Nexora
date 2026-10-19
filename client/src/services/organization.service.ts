@@ -34,6 +34,21 @@ export const organizationService = {
     return res.data
   },
 
+  async transferOwnership(idOrSlug: string, newOwnerUserId: string): Promise<string> {
+    const res = await apiClient.post<ApiResponseWrapper<{ message: string }>>(
+      `/organizations/${idOrSlug}/transfer-ownership`,
+      { newOwnerUserId },
+    )
+    return res.message || 'Ownership transferred successfully'
+  },
+
+  async delete(idOrSlug: string): Promise<string> {
+    const res = await apiClient.delete<ApiResponseWrapper<{ message: string }>>(
+      `/organizations/${idOrSlug}`,
+    )
+    return res.message || 'Workspace deleted successfully'
+  },
+
   async leave(idOrSlug: string): Promise<string> {
     const res = await apiClient.post<ApiResponseWrapper<{ message: string }>>(
       `/organizations/${idOrSlug}/leave`,

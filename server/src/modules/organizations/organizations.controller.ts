@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -13,7 +14,11 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser, JwtAuthGuard, createApiResponse } from '@/common';
 import type { JwtPayload } from '../auth/auth.interface';
 import { OrganizationsService } from './organizations.service';
-import { CreateOrganizationDto, UpdateOrganizationDto } from './dto';
+import {
+  CreateOrganizationDto,
+  TransferOwnershipDto,
+  UpdateOrganizationDto,
+} from './dto';
 
 @ApiTags('organizations')
 @ApiBearerAuth()
@@ -58,6 +63,29 @@ export class OrganizationsController {
   ) {
     const org = await this.orgService.update(user.sub, idOrSlug, dto);
     return createApiResponse(org, 'Workspace updated successfully');
+  }
+
+  @Post(':idOrSlug/transfer-ownership')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Transfer workspace ownership to another member (Owner only)' })
+  async transferOwnership(
+    @CurrentUser() user: JwtPayload,
+    @Param('idOrSlug') idOrSlug: string,
+    @Body() dto: TransferOwnershipDto,
+  ) {
+    const result = await this.orgService.transferOwnership(user.sub, idOrSlug, dto);
+    return createApiResponse(result, result.message);
+  }
+
+  @Delete(':idOrSlug')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Soft delete workspace (Owner only)' })
+  async delete(
+    @CurrentUser() user: JwtPayload,
+    @Param('idOrSlug') idOrSlug: string,
+  ) {
+    const result = await this.orgService.delete(user.sub, idOrSlug);
+    return createApiResponse(result, result.message);
   }
 
   @Post(':idOrSlug/leave')

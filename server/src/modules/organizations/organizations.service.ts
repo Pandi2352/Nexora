@@ -1,15 +1,9 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { AppException, ErrorCode, StringUtil } from '@/common';
 import { OrganizationsRepository } from './organizations.repository';
-import type { CreateOrganizationDto, UpdateOrganizationDto } from './dto';
-import {
-  MembershipRole,
-  MembershipStatus,
-} from './schemas/membership.schema';
-import {
-  type OrganizationDocument,
-  OrganizationStatus,
-} from './schemas/organization.schema';
+import type { CreateOrganizationDto, UpdateOrganizationDto, TransferOwnershipDto } from './dto';
+import { MembershipRole, MembershipStatus } from './schemas/membership.schema';
+import { type OrganizationDocument, OrganizationStatus } from './schemas/organization.schema';
 
 export interface WorkspaceSummary {
   id: string;
@@ -31,7 +25,6 @@ export class OrganizationsService {
     const baseSlug = StringUtil.slugify(dto.slug || dto.name) || 'workspace';
     let slug = baseSlug;
     let counter = 1;
-
     while (await this.orgRepo.findOrgBySlug(slug)) {
       slug = `${baseSlug}-${counter++}`;
     }
@@ -99,11 +92,7 @@ export class OrganizationsService {
 
     const membership = await this.orgRepo.findMembership(org._id, userId);
     if (!membership || membership.status !== MembershipStatus.Active) {
-      throw new AppException(
-        HttpStatus.FORBIDDEN,
-        'Access denied to this workspace',
-        ErrorCode.FORBIDDEN,
-      );
+      throw new AppException(HttpStatus.FORBIDDEN, 'Access denied to this workspace', ErrorCode.FORBIDDEN);
     }
 
     const membersCount = await this.orgRepo.countMembers(org._id);
@@ -120,18 +109,10 @@ export class OrganizationsService {
     };
   }
 
-  async update(
-    userId: string,
-    idOrSlug: string,
-    dto: UpdateOrganizationDto,
-  ): Promise<WorkspaceSummary> {
+  async update(userId: string, idOrSlug: string, dto: UpdateOrganizationDto): Promise<WorkspaceSummary> {
     const existing = await this.getByIdOrSlug(userId, idOrSlug);
     if (existing.role !== MembershipRole.Owner && existing.role !== MembershipRole.Admin) {
-      throw new AppException(
-        HttpStatus.FORBIDDEN,
-        'Only owners and admins can update workspace settings',
-        ErrorCode.FORBIDDEN,
-      );
+      throw new AppException(HttpStatus.FORBIDDEN, 'Only owners and admins can update settings', ErrorCode.FORBIDDEN);
     }
 
     const updates: Partial<OrganizationDocument> = {};
@@ -145,11 +126,7 @@ export class OrganizationsService {
       if (normalizedSlug !== existing.slug) {
         const conflict = await this.orgRepo.findOrgBySlug(normalizedSlug);
         if (conflict) {
-          throw new AppException(
-            HttpStatus.CONFLICT,
-            'Workspace slug is already in use',
-            ErrorCode.CONFLICT,
-          );
+          throw new AppException(HttpStatus.CONFLICT, 'Workspace slug is already in use', ErrorCode.CONFLICT);
         }
         updates.slug = normalizedSlug;
       }
@@ -173,17 +150,47 @@ export class OrganizationsService {
     };
   }
 
-  async leave(userId: string, idOrSlug: string): Promise<{ success: boolean; message: string }> {
+  async transferOwnership(userId: string, idOrSlug: string, dto: TransferOwnershipDto) {
     const existing = await this.getByIdOrSlug(userId, idOrSlug);
+    if (existing.role !== MembershipRole.Owner) {
+      throw new AppException(HttpStatus.FORBIDDEN, 'Only the workspace Owner can transfer ownership', ErrorCode.FORBIDDEN);
+    }
+    if (dto.newOwnerUserId === userId) {
+      throw new AppException(HttpStatus.BAD_REQUEST, 'You are already the owner of this workspace', ErrorCode.BAD_REQUEST);
+    }
 
+    const target = await this.orgRepo.findMembership(existing.id, dto.newOwnerUserId);
+    if (!target || target.status !== MembershipStatus.Active) {
+      throw new AppException(HttpStatus.BAD_REQUEST, 'Target user must be an active workspace member', ErrorCode.BAD_REQUEST);
+    }
+
+    await this.orgRepo.updateMembershipRole(existing.id, dto.newOwnerUserId, MembershipRole.Owner);
+    await this.orgRepo.updateMembershipRole(existing.id, userId, MembershipRole.Admin);
+    await this.orgRepo.updateOrganization(existing.id, { ownerId: dto.newOwnerUserId });
+
+    return { success: true, message: 'Ownership transferred successfully' };
+  }
+
+  async delete(userId: string, idOrSlug: string) {
+    const existing = await this.getByIdOrSlug(userId, idOrSlug);
+    if (existing.role !== MembershipRole.Owner) {
+      throw new AppException(HttpStatus.FORBIDDEN, 'Only the workspace Owner can delete this workspace', ErrorCode.FORBIDDEN);
+    }
+
+    await this.orgRepo.updateOrganization(existing.id, {
+      status: OrganizationStatus.Deleted,
+      deletedAt: new Date(),
+    });
+
+    return { success: true, message: 'Workspace deleted successfully' };
+  }
+
+  async leave(userId: string, idOrSlug: string) {
+    const existing = await this.getByIdOrSlug(userId, idOrSlug);
     if (existing.role === MembershipRole.Owner) {
       const ownerCount = await this.orgRepo.countOwners(existing.id);
       if (ownerCount <= 1) {
-        throw new AppException(
-          HttpStatus.BAD_REQUEST,
-          'Cannot leave workspace as the sole owner. Transfer ownership first.',
-          ErrorCode.BAD_REQUEST,
-        );
+        throw new AppException(HttpStatus.BAD_REQUEST, 'Cannot leave workspace as sole owner. Transfer ownership first.', ErrorCode.BAD_REQUEST);
       }
     }
 

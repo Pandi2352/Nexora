@@ -40,6 +40,14 @@ test('workspace route renders shell + page in outlet', async () => {
   root.unmount()
 })
 
+test('workspace settings/general renders general settings page in outlet', async () => {
+  const root = await renderAt('/workspace/acme/settings/general')
+  expect(document.querySelector('aside#app-sidebar')).not.toBeNull()
+  expect(document.querySelector('main h1')?.textContent).toBe('General Settings')
+  expect(document.body.textContent).toContain('Workspace Profile')
+  root.unmount()
+})
+
 test('workspace settings/members renders members page in outlet', async () => {
   const root = await renderAt('/workspace/acme/settings/members')
   expect(document.querySelector('aside#app-sidebar')).not.toBeNull()
