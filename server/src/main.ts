@@ -3,6 +3,7 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import {
@@ -23,6 +24,7 @@ async function bootstrap() {
   const isProduction = config.get('NODE_ENV', { infer: true }) === Environment.Production;
 
   app.use(requestIdMiddleware);
+  app.use(cookieParser());
   app.use(helmet());
   app.useBodyParser('json', { limit: config.get('BODY_LIMIT', { infer: true }) });
   // Same-origin in production (reverse proxy); CORS only for the configured app origin.

@@ -69,9 +69,9 @@ This document lists every technology Nexora OS will use, why it was chosen, when
 | `@nestjs/swagger` 12.0.2 | OpenAPI documentation (development only) | M1 | Installed |
 | helmet 8.3.0 | Security headers | M1 | Installed |
 | reflect-metadata 0.2.2, rxjs 7.8.2 | NestJS runtime peers | M1 | Installed |
-| UUID generation | Node `crypto.randomUUID()`; no `uuid` package needed | M1 | Built-in |
-| Argon2id (or an appropriately configured alternative) | Password hashing | M2 | Proposed |
-| JWT (access tokens) | Short-lived stateless access tokens | M2 | Proposed |
+| `@node-rs/argon2` 2.2.2 | Argon2id password hashing (prebuilt N-API binaries) | M2 | Installed |
+| `@nestjs/jwt` 12.0.3 | Short-lived stateless access tokens | M2 | Installed |
+| `cookie-parser` 1.4.7 | Parsing HttpOnly cookies for rotating refresh tokens | M2 | Installed |
 | Rate limiter (e.g. @nestjs/throttler) | Brute-force protection on auth endpoints | M2 | Proposed |
 | Structured logger (e.g. pino) | JSON logs with correlation IDs | M1 | Proposed |
 | Jest + Supertest | Unit and API integration tests | M1 | Proposed |

@@ -1,8 +1,8 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { hash, verify } from '@node-rs/argon2';
 
 /**
  * Token hashing for refresh tokens, invitation and reset links: store only the hash.
- * Password hashing (Argon2id) is added here in MVP 1 together with its package.
  */
 export function sha256(data: string | Buffer): string {
   return createHash('sha256').update(data).digest('hex');
@@ -20,4 +20,18 @@ export function safeEqualHex(a: string, b: string): boolean {
   return left.length === right.length && timingSafeEqual(left, right);
 }
 
-export const HashUtil = { sha256, randomToken, safeEqualHex };
+/** Hashes a plain-text password using Argon2id. */
+export async function hashPassword(plainText: string): Promise<string> {
+  return hash(plainText);
+}
+
+/** Verifies a plain-text password against an Argon2id hash. */
+export async function verifyPassword(plainText: string, digest: string): Promise<boolean> {
+  try {
+    return await verify(digest, plainText);
+  } catch {
+    return false;
+  }
+}
+
+export const HashUtil = { sha256, randomToken, safeEqualHex, hashPassword, verifyPassword };
