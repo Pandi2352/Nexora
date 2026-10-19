@@ -1,10 +1,21 @@
 import { useState, type FormEvent } from 'react'
-import { Building2, Link2 } from 'lucide-react'
+import { Building2, Globe, Link2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Input } from '@/components/ui'
+import { Button, Input, Select, type SelectOption } from '@/components/ui'
 import { paths } from '@/config/paths'
 import { useWorkspace } from '@/context/workspace/workspace-context'
 import { extractApiError } from '@/lib/api-client'
+
+const TIMEZONE_OPTIONS: SelectOption[] = [
+  { value: 'UTC', label: 'UTC (Universal Coordinated Time)' },
+  { value: 'America/New_York', label: 'America / New York (EST/EDT)' },
+  { value: 'America/Los_Angeles', label: 'America / Los Angeles (PST/PDT)' },
+  { value: 'Europe/London', label: 'Europe / London (GMT/BST)' },
+  { value: 'Europe/Paris', label: 'Europe / Paris (CET/CEST)' },
+  { value: 'Asia/Tokyo', label: 'Asia / Tokyo (JST)' },
+  { value: 'Asia/Kolkata', label: 'Asia / Kolkata (IST)' },
+  { value: 'Australia/Sydney', label: 'Australia / Sydney (AEST)' },
+]
 
 export function CreateWorkspaceForm() {
   const navigate = useNavigate()
@@ -91,27 +102,14 @@ export function CreateWorkspaceForm() {
         />
       </div>
 
-      <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">
-          Workspace Timezone
-        </label>
-        <div className="relative">
-          <select
-            value={timezone}
-            onChange={(e) => setTimezone(e.target.value)}
-            className="w-full min-h-10 px-3 py-2 text-sm rounded-md border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-brand-500 cursor-pointer"
-          >
-            <option value="UTC">UTC (Universal Coordinated Time)</option>
-            <option value="America/New_York">America / New York (EST/EDT)</option>
-            <option value="America/Los_Angeles">America / Los Angeles (PST/PDT)</option>
-            <option value="Europe/London">Europe / London (GMT/BST)</option>
-            <option value="Europe/Paris">Europe / Paris (CET/CEST)</option>
-            <option value="Asia/Tokyo">Asia / Tokyo (JST)</option>
-            <option value="Asia/Kolkata">Asia / Kolkata (IST)</option>
-            <option value="Australia/Sydney">Australia / Sydney (AEST)</option>
-          </select>
-        </div>
-      </div>
+      <Select
+        label="Workspace Timezone"
+        icon={Globe}
+        value={timezone}
+        options={TIMEZONE_OPTIONS}
+        onChange={(val) => setTimezone(val)}
+        searchable
+      />
 
       <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
         <Button

@@ -9,6 +9,8 @@ import { UsersModule } from './modules/users/users.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { HealthModule } from './modules/health/health.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { InvitationsModule } from './modules/invitations/invitations.module';
+import { MembershipsModule } from './modules/memberships/memberships.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { OrganizationsModule } from './modules/organizations/organizations.modul
     SessionsModule,
     AuthModule,
     OrganizationsModule,
+    InvitationsModule,
+    MembershipsModule,
     HealthModule,
   ],
 })

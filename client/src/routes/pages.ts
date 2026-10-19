@@ -8,6 +8,7 @@ export const pages = {
   Error: lazyPage(() => import('@/pages/errors/ErrorPage')),
   Workspaces: lazyPage(() => import('@/pages/workspaces/WorkspacesPage')),
   CreateWorkspace: lazyPage(() => import('@/pages/workspaces/CreateWorkspacePage')),
+  Members: lazyPage(() => import('@/pages/members/MembersPage')),
   Login: lazyPage(() => import('@/pages/auth/LoginPage')),
   Register: lazyPage(() => import('@/pages/auth/RegisterPage')),
   VerifyEmail: lazyPage(() => import('@/pages/auth/VerifyEmailPage')),

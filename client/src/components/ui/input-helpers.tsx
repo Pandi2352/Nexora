@@ -101,10 +101,10 @@ interface InputFeedbackProps {
   warning?: string | ReactNode
   success?: string | ReactNode
   hint?: string | ReactNode
-  errorId: string
+  errorId?: string
   warningId?: string
-  successId: string
-  hintId: string
+  successId?: string
+  hintId?: string
   showCount?: boolean
   currentLength?: number
   maxLength?: number

@@ -23,7 +23,10 @@ export const workspaceRoutes: RouteObject = {
           errorElement: <RouteErrorPage />,
           children: [
             { index: true, element: <Navigate to={workspaceSegments.dashboard} replace /> },
-            ...Object.values(workspaceSegments).map(placeholder),
+            { path: workspaceSegments.settingsMembers, element: <pages.Members /> },
+            ...Object.values(workspaceSegments)
+              .filter((segment) => segment !== workspaceSegments.settingsMembers)
+              .map(placeholder),
             { path: '*', element: <pages.NotFound /> },
           ],
         },

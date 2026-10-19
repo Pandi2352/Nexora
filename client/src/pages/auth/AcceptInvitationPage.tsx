@@ -4,6 +4,8 @@ import { Building2, CheckCircle2, UserCheck } from 'lucide-react'
 import { useAuth } from '@/context/auth/auth-context'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Input } from '@/components/ui'
+import { extractApiError } from '@/lib/api-client'
+import { memberService } from '@/services/member.service'
 
 export default function AcceptInvitationPage() {
   useDocumentTitle('Accept Invitation — Nexora OS')
@@ -20,18 +22,25 @@ export default function AcceptInvitationPage() {
   const [fullName, setFullName] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [accepted, setAccepted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleAccept = async (e: FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setError(null)
     try {
-      // Validate token presence and simulate acceptance
-      if (!token && !isAuthenticated) {
-        // Fallback for direct testing
+      if (token) {
+        await memberService.acceptInvitation({
+          token,
+          name: fullName || undefined,
+          password: password || undefined,
+        })
       }
-      await new Promise((r) => setTimeout(r, 600))
       setAccepted(true)
       setTimeout(() => navigate('/workspaces'), 1200)
+    } catch (err) {
+      const parsed = extractApiError(err)
+      setError(parsed.message)
     } finally {
       setIsSubmitting(false)
     }
@@ -67,6 +76,11 @@ export default function AcceptInvitationPage() {
         </CardHeader>
 
         <CardContent className="space-y-4">
+          {error && (
+            <div className="rounded-md border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+              {error}
+            </div>
+          )}
           <form id="invite-form" onSubmit={handleAccept} className="space-y-3.5">
             {isAuthenticated ? (
               <div className="rounded-md border border-slate-200 bg-slate-50 p-3 flex items-center gap-3">
