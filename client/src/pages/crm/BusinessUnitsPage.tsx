@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Layers, Plus, Search } from 'lucide-react'
+import { Layers, Plus } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Button, Input, Spinner } from '@/components/ui'
+import { Button, SearchInput, Spinner } from '@/components/ui'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
@@ -100,13 +100,11 @@ export default function BusinessUnitsPage() {
 
       {/* Search */}
       <div className="flex items-center justify-between">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
-          <Input
+        <div className="flex-1 max-w-sm">
+          <SearchInput
             placeholder="Search business units or codes..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
           />
         </div>
       </div>

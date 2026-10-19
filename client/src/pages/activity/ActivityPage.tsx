@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Activity, Search } from 'lucide-react'
+import { Activity } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Button, Input, Select, Spinner, type SelectOption } from '@/components/ui'
+import { Button, SearchInput, Select, Spinner, type SelectOption } from '@/components/ui'
 import { ActivityEventRow } from '@/components/activity/ActivityEventRow'
 import { ActivityDetailModal } from '@/components/activity/ActivityDetailModal'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
@@ -96,8 +96,7 @@ export default function ActivityPage() {
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1 max-w-xl">
           <div className="flex-1">
-            <Input
-              icon={Search}
+            <SearchInput
               placeholder="Filter by actor or target..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

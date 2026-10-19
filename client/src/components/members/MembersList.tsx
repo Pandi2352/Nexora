@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { Search } from 'lucide-react'
-import { Input, Select, type SelectOption } from '@/components/ui'
+import { SearchInput, Select, type SelectOption } from '@/components/ui'
 import type { WorkspaceMember } from '@/types/member'
 import { MemberRow } from './MemberRow'
 
@@ -43,11 +42,10 @@ export function MembersList({
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <div className="flex-1">
-          <Input
+          <SearchInput
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by name or email..."
-            icon={Search}
             size="md"
           />
         </div>

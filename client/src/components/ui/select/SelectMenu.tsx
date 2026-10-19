@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, Search } from 'lucide-react'
+import { Check, Search, X } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { cn } from '@/lib/cn'
 import type { SelectOption } from './select.types'
@@ -45,7 +45,7 @@ export function SelectMenu<T = string>({
       role="listbox"
       aria-multiselectable={multiple}
       className={cn(
-        'absolute z-50 w-full rounded-md border border-slate-200 bg-white py-1.5 animate-in fade-in duration-100',
+        'absolute z-50 w-full rounded-md border border-slate-300 bg-white py-1.5 ring-1 ring-slate-900/10 animate-in fade-in duration-100',
         placement === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
         className,
       )}
@@ -60,8 +60,21 @@ export function SelectMenu<T = string>({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md border border-slate-200 bg-slate-50/50 text-slate-900 placeholder:text-slate-400 outline-none focus:outline-none focus:border-brand-500 focus:bg-white transition-colors"
+              className="w-full pl-8 pr-7 py-1.5 text-xs rounded-md border border-slate-200 bg-slate-50/50 text-slate-900 placeholder:text-slate-400 outline-none focus:outline-none focus:border-brand-500 focus:bg-white transition-colors"
             />
+            {search.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('')
+                  searchInputRef.current?.focus()
+                }}
+                className="absolute right-2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
+                aria-label="Clear search"
+              >
+                <X className="size-3" />
+              </button>
+            )}
           </div>
         </div>
       )}

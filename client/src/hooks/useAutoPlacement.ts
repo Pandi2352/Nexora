@@ -14,16 +14,30 @@ export interface AutoPlacementOptions {
   boundaryMargin?: number
 }
 
+function getScrollParent(element: HTMLElement | null): HTMLElement | null {
+  let parent = element?.parentElement ?? null
+  while (parent && parent !== document.body && parent !== document.documentElement) {
+    const style = window.getComputedStyle(parent)
+    const isScrollable =
+      style.overflowY === 'auto' ||
+      style.overflowY === 'scroll' ||
+      parent.getAttribute('role') === 'dialog'
+    if (isScrollable) return parent
+    parent = parent.parentElement
+  }
+  return null
+}
+
 /**
  * Automatically computes whether a floating menu (select, dropdown) should open
- * below or above its trigger element depending on viewport collision.
+ * below or above its trigger element depending on viewport and container collision.
  */
 export function useAutoPlacement(
   triggerRef: RefObject<HTMLElement | null>,
   isOpen: boolean,
   options: AutoPlacementOptions = {},
 ) {
-  const { preferred = 'auto', minSpace = 280, boundaryMargin = 12 } = options
+  const { preferred = 'auto', minSpace = 240, boundaryMargin = 12 } = options
   const [placement, setPlacement] = useState<Placement>(
     preferred === 'top' ? 'top' : 'bottom',
   )
@@ -39,8 +53,18 @@ export function useAutoPlacement(
 
     const rect = triggerRef.current.getBoundingClientRect()
     const viewportHeight = window.innerHeight || document.documentElement.clientHeight
-    const spaceBelow = viewportHeight - rect.bottom
-    const spaceAbove = rect.top
+    let spaceBelow = viewportHeight - rect.bottom
+    let spaceAbove = rect.top
+
+    // If inside a bounded scroll container or modal dialog, clamp space to container bounds
+    const scrollParent = getScrollParent(triggerRef.current)
+    if (scrollParent) {
+      const parentRect = scrollParent.getBoundingClientRect()
+      const parentSpaceBelow = parentRect.bottom - rect.bottom
+      const parentSpaceAbove = rect.top - parentRect.top
+      spaceBelow = Math.min(spaceBelow, parentSpaceBelow)
+      spaceAbove = Math.min(spaceAbove, parentSpaceAbove)
+    }
 
     // If space below is less than required minimum and space above has more room, flip to top
     if (spaceBelow < minSpace && spaceAbove > spaceBelow) {

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Info, Search, ShieldCheck } from 'lucide-react'
+import { Info, ShieldCheck } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
-import { Input, Spinner } from '@/components/ui'
+import { SearchInput, Spinner } from '@/components/ui'
 import { RoleOverviewCard } from '@/components/roles/RoleOverviewCard'
 import { PermissionMatrixTable } from '@/components/roles/PermissionMatrixTable'
 import { useWorkspace } from '@/context/workspace/workspace-context'
@@ -101,8 +101,7 @@ export default function RolesPage() {
                 Capability Matrix
               </h3>
               <div className="w-full sm:w-72">
-                <Input
-                  icon={Search}
+                <SearchInput
                   placeholder="Filter capabilities..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}

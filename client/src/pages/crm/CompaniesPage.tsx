@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Building2, Plus, Search } from 'lucide-react'
+import { Building2, Plus } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Button, Input, Select, Spinner, type SelectOption } from '@/components/ui'
+import { Button, SearchInput, Select, Spinner, type SelectOption } from '@/components/ui'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
@@ -90,11 +90,10 @@ export default function CompaniesPage() {
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <div className="flex-1">
-          <Input
+          <SearchInput
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search companies by name, industry, or email..."
-            icon={Search}
             size="md"
           />
         </div>

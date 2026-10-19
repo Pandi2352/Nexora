@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Plus, Search, Users } from 'lucide-react'
+import { Plus, Users } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Button, Input, Modal, Spinner } from '@/components/ui'
+import { Button, Modal, SearchInput, Spinner } from '@/components/ui'
 import { TeamCard } from '@/components/teams/TeamCard'
 import { CreateTeamModal } from '@/components/teams/CreateTeamModal'
 import { EditTeamModal } from '@/components/teams/EditTeamModal'
@@ -99,8 +99,7 @@ export default function TeamsPage() {
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="w-full sm:w-72">
-          <Input
-            icon={Search}
+          <SearchInput
             placeholder="Search teams..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Calendar, FileText, PhoneCall, Plus, Zap } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Button, Select, Spinner, type SelectOption } from '@/components/ui'
+import { Button, SearchInput, Select, Spinner, type SelectOption } from '@/components/ui'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
@@ -26,6 +26,7 @@ export default function ActivitiesPage() {
   const [activities, setActivities] = useState<SalesActivity[]>([])
   const [companies, setCompanies] = useState<Company[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [companyFilter, setCompanyFilter] = useState<string>('all')
   const [modalOpen, setModalOpen] = useState(false)
@@ -56,6 +57,16 @@ export default function ActivitiesPage() {
     () => companies.map((c) => ({ value: c.id, label: c.name })),
     [companies],
   )
+
+  const filteredActivities = useMemo(() => {
+    if (!search.trim()) return activities
+    const q = search.toLowerCase()
+    return activities.filter(
+      (a) =>
+        a.title.toLowerCase().includes(q) ||
+        (a.description && a.description.toLowerCase().includes(q)),
+    )
+  }, [activities, search])
 
   const handleSaveActivity = async (payload: CreateActivityPayload) => {
     if (!slug) return
@@ -116,19 +127,28 @@ export default function ActivitiesPage() {
       </div>
 
       {/* Filter toolbar */}
-      <div className="flex flex-wrap items-center gap-3">
-        <Select
-          value={typeFilter}
-          onChange={(val) => setTypeFilter(val)}
-          options={TYPE_FILTER_OPTIONS}
-          className="w-44"
-        />
-        <Select
-          value={companyFilter}
-          onChange={(val) => setCompanyFilter(val)}
-          options={[{ value: 'all', label: 'All Companies' }, ...companyOptions]}
-          className="w-48"
-        />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex-1 max-w-sm">
+          <SearchInput
+            placeholder="Search activities by subject or notes..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Select
+            value={typeFilter}
+            onChange={(val) => setTypeFilter(val)}
+            options={TYPE_FILTER_OPTIONS}
+            className="w-44"
+          />
+          <Select
+            value={companyFilter}
+            onChange={(val) => setCompanyFilter(val)}
+            options={[{ value: 'all', label: 'All Companies' }, ...companyOptions]}
+            className="w-48"
+          />
+        </div>
       </div>
 
       {/* Content */}
@@ -136,11 +156,15 @@ export default function ActivitiesPage() {
         <div className="flex h-48 items-center justify-center">
           <Spinner size="lg" />
         </div>
-      ) : activities.length === 0 ? (
+      ) : filteredActivities.length === 0 ? (
         <EmptyState
           icon={Zap}
-          title="No sales activities recorded"
-          description="Log cold calls, discovery meetings, and submitted proposals to build your activity history."
+          title={search ? 'No activities matching your search' : 'No sales activities recorded'}
+          description={
+            search
+              ? 'Try adjusting your search terms or clearing filters.'
+              : 'Log cold calls, discovery meetings, and submitted proposals to build your activity history.'
+          }
           action={
             <Button size="sm" onClick={() => setModalOpen(true)}>
               <Plus className="size-4 mr-1.5" />
@@ -150,7 +174,7 @@ export default function ActivitiesPage() {
         />
       ) : (
         <ActivityTimeline
-          activities={activities}
+          activities={filteredActivities}
           companies={companies}
           onDelete={handleDeleteActivity}
         />

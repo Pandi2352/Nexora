@@ -49,6 +49,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const handleClear = () => {
       setInnerVal('')
       onClear?.()
+      if (onChange) {
+        const syntheticEvent = {
+          target: { value: '' },
+          currentTarget: { value: '' },
+        } as React.ChangeEvent<HTMLInputElement>
+        onChange(syntheticEvent)
+      }
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

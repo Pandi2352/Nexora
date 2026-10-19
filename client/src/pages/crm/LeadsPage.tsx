@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Plus, Search, Star, Target } from 'lucide-react'
+import { Plus, Star, Target } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Button, Input, Select, Spinner, type SelectOption } from '@/components/ui'
+import { Button, SearchInput, Select, Spinner, type SelectOption } from '@/components/ui'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
@@ -153,13 +153,11 @@ export default function LeadsPage() {
 
       {/* Filter Toolbar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
-          <Input
+        <div className="flex-1 max-w-sm">
+          <SearchInput
             placeholder="Search leads, companies or contacts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
           />
         </div>
         <div className="flex items-center gap-2">

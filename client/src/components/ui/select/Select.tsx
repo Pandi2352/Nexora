@@ -1,5 +1,6 @@
 import { useId, useRef, useState, type MouseEvent } from 'react'
 import { useAutoPlacement } from '@/hooks/useAutoPlacement'
+import { useDismiss } from '@/hooks/useDismiss'
 import { cn } from '@/lib/cn'
 import { InputFeedback } from '../input-helpers'
 import { SelectMenu } from './SelectMenu'
@@ -40,10 +41,12 @@ export function Select<T = string>(props: SelectProps<T>): React.JSX.Element {
   const triggerWrapperRef = useRef<HTMLDivElement>(null)
   const [isOpen, setIsOpen] = useState(false)
 
+  useDismiss(containerRef, () => setIsOpen(false), isOpen)
+
   const { placement, maxHeight, updatePosition } = useAutoPlacement(
     triggerWrapperRef,
     isOpen,
-    { preferred: preferredPlacement ?? 'auto', minSpace: 280 },
+    { preferred: preferredPlacement ?? 'auto', minSpace: 240 },
   )
 
   const [uncontrolledSingle, setUncontrolledSingle] = useState<T | undefined>(
@@ -124,7 +127,7 @@ export function Select<T = string>(props: SelectProps<T>): React.JSX.Element {
     <div
       ref={containerRef}
       onBlur={handleBlur}
-      className={cn('relative w-full space-y-1', className)}
+      className={cn('relative w-full space-y-1', isOpen && 'z-30', className)}
     >
       {(label || cornerAction) && (
         <div className="flex items-center justify-between gap-2">
