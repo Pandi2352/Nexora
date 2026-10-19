@@ -10,6 +10,7 @@ export * from './swagger/setup-swagger';
 export * from './decorators/public.decorator';
 export * from './decorators/current-user.decorator';
 export * from './guards/jwt-auth.guard';
+export * from './interceptors';
 export * from './utils/date.util';
 export * from './utils/hash.util';
 export * from './utils/id.util';

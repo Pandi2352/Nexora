@@ -10,13 +10,15 @@ import type { Request, Response } from 'express';
 import { AppException, type FieldError } from './app.exception';
 import { ErrorCode, errorCodeForStatus } from './error-codes';
 
-/** Standard error body. Documented in docs/BACKEND_ARCHITECTURE.md § 9.3. */
+/** Standard error body matching ApiResponse top-level structure. */
 export interface ErrorBody {
+  success: false;
   statusCode: number;
   code: ErrorCode;
   message: string;
   details?: FieldError[];
   requestId?: string;
+  timestamp: string;
 }
 
 const SAFE_SERVER_MESSAGE = 'An unexpected error occurred. Please try again later.';
@@ -45,13 +47,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
   }
 
   private toBody(exception: unknown, requestId?: string): ErrorBody {
+    const timestamp = new Date().toISOString();
+
     if (exception instanceof AppException) {
       return {
+        success: false,
         statusCode: exception.getStatus(),
         code: exception.code,
         message: exception.message,
         details: exception.details,
         requestId,
+        timestamp,
       };
     }
 
@@ -62,11 +68,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
         typeof res === 'string'
           ? res
           : String((res as { message?: unknown }).message ?? exception.message);
-      return { statusCode, code: errorCodeForStatus(statusCode), message, requestId };
+      return {
+        success: false,
+        statusCode,
+        code: errorCodeForStatus(statusCode),
+        message,
+        requestId,
+        timestamp,
+      };
     }
 
     // Unknown errors: never leak internals outside development.
     return {
+      success: false,
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       code: ErrorCode.SERVER_ERROR,
       message:
@@ -74,6 +88,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
           ? exception.message
           : SAFE_SERVER_MESSAGE,
       requestId,
+      timestamp,
     };
   }
 }

@@ -8,7 +8,9 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import {
   AllExceptionsFilter,
+  ApiResponseInterceptor,
   createValidationPipe,
+  HttpLoggingInterceptor,
   requestIdMiddleware,
   setupSwagger,
 } from '@/common';
@@ -32,6 +34,7 @@ async function bootstrap() {
   app.setGlobalPrefix(apiPrefix);
   app.useGlobalPipes(createValidationPipe());
   app.useGlobalFilters(new AllExceptionsFilter(!isProduction));
+  app.useGlobalInterceptors(new HttpLoggingInterceptor(), new ApiResponseInterceptor());
   app.enableShutdownHooks();
 
   if (!isProduction) setupSwagger(app, 'docs');

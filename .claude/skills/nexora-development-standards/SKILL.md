@@ -150,27 +150,29 @@ If a needed primitive does not exist, add it to `components/ui/` first, then use
 
 ## 4. Backend conventions
 
-### UUIDs only
+### UUIDs and Database Schemas (`server/src/database/base.schema.ts`)
 
 - All entity IDs and references are UUID v4 strings, generated with `IdUtil.generateUuid()` and validated with `IdUtil.isValidUuid()` / `@IsUUID('4')`.
 - Never use MongoDB `ObjectId`, `Types.ObjectId` or `isValidObjectId`.
-
 - Schemas extend the base classes in `server/src/database/base.schema.ts`:
-  - `BaseDocument` gives a UUID `_id`, `createdBy`, `updatedBy` and timestamps.
-  - `TenantDocument` adds a required, indexed `organizationId`. Use it for every tenant-owned collection.
+  - `BaseDocument`: UUID `_id`, audit actors (`createdBy`, `updatedBy`), and audit timestamps (`createdAt`, `updatedAt`).
+  - `SoftDeleteDocument`: extends `BaseDocument` with `isDeleted` (boolean, indexed), `deletedAt`, and `deletedBy`.
+  - `TenantDocument`: extends `BaseDocument` with required, indexed `organizationId`. Use for all tenant-owned entities.
+  - `TenantSoftDeleteDocument`: combines tenant scoping and soft-delete capabilities.
+- Standard options: use `defaultSchemaOptions` or `createBaseSchema(ModelClass)` (`applyBaseSchemaPlugins(schema)`), which automatically enables `timestamps: true`, `versionKey: false`, maps `id = _id`, and removes `__v` in `toJSON` and `toObject`.
 - IDs are generated with Node's `crypto.randomUUID()` via `IdUtil`. Don't add the `uuid` package.
 
 ```ts
-@Schema({ collection: 'tasks', timestamps: true, versionKey: false })
-export class Task extends TenantDocument {
+@Schema({ collection: 'tasks', ...defaultSchemaOptions })
+export class Task extends TenantSoftDeleteDocument {
   @Prop({ type: String, required: true, trim: true, maxlength: 200 })
   title: string;
 
   @Prop({ type: String })
   assigneeId?: string; // UUID of a user
 }
-export const TaskSchema = SchemaFactory.createForClass(Task);
-TaskSchema.index({ organizationId: 1, createdAt: -1 });
+export const TaskSchema = createBaseSchema(Task);
+TaskSchema.index({ organizationId: 1, isDeleted: 1, createdAt: -1 });
 ```
 
 ### Tenant scoping
@@ -180,11 +182,49 @@ TaskSchema.index({ organizationId: 1, createdAt: -1 });
 - `organizationId` comes from the resolved tenant context, never from the request body.
 - A record in another tenant returns 404.
 
+### Unified API Responses & Centralized HTTP Logging
+
+Every API endpoint strictly conforms to the uniform response envelope.
+
+**Success Response Envelope (`ApiResponse<T>`):**
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Tasks fetched",
+  "data": [],
+  "meta": { "total": 0, "page": 1, "limit": 20, "totalPages": 0, "hasNextPage": false, "hasPrevPage": false },
+  "requestId": "c7a38914-1fbc-499b-b9f1-c8b598b0f4a2",
+  "timestamp": "2026-10-19T10:30:00.000Z"
+}
+```
+
+**Error Response Envelope (`ApiErrorResponse`):**
+```json
+{
+  "success": false,
+  "statusCode": 404,
+  "code": "NOT_FOUND",
+  "message": "Task not found",
+  "details": [{ "field": "taskId", "message": "Task does not exist in workspace" }],
+  "requestId": "c7a38914-1fbc-499b-b9f1-c8b598b0f4a2",
+  "timestamp": "2026-10-19T10:30:00.000Z"
+}
+```
+
+- Enforced globally by `ApiResponseInterceptor` and `AllExceptionsFilter`. Controllers use `createApiResponse(...)` or return data.
+- Never manually build raw error envelopes in controllers. Throw `AppException` and let the global filter format it.
+- **HTTP Request & Response Logger:** `HttpLoggingInterceptor` automatically logs `[HTTP] [METHOD] /path STATUS +DURATIONms [req:ID] [ip:IP] [usr:USER_ID]`. It handles performance timing, correlates request IDs, and sanitizes sensitive credentials/payloads.
+
 ### Common helpers (`@/common`)
 
 | Helper | Use |
 |---|---|
 | `createApiResponse(data, message?, meta?)` | Every successful controller response |
+| `ApiResponse<T>`, `ApiErrorResponse` | Standard API response interfaces |
+| `ApiResponseInterceptor`, `HttpLoggingInterceptor` | Global interceptors wired in `main.ts` |
+| `BaseDocument`, `SoftDeleteDocument`, `TenantDocument`, `TenantSoftDeleteDocument` | Base classes for every Mongoose collection |
+| `defaultSchemaOptions`, `createBaseSchema` | Schema options and plugins (UUID `id` virtual, no `__v`) |
 | `PaginationDto` | Base query DTO (`page`, `limit` ≤ 100, `sort`, `order`, `search`, `skip` getter); list DTOs extend it and restrict `sort` with `@IsIn` |
 | `createPaginationMeta(total, page, limit)` | `meta` for paginated lists |
 | `AppException(status, message, code?, details?)` | The only way services signal errors |
@@ -192,7 +232,7 @@ TaskSchema.index({ organizationId: 1, createdAt: -1 });
 | `IdUtil` | `generateUuid()`, `isValidUuid()` |
 | `StringUtil` | `normalizeEmail`, `slugify`, `escapeRegex` (before any `$regex`), `toCsvSafe` (exports) |
 | `DateUtil` | `toIsoString`, `addMinutes`, `addDays`, `isExpired` (UTC) |
-| `HashUtil` | `sha256`, `randomToken`, `safeEqualHex`; Argon2id password hashing is added in MVP 1 |
+| `HashUtil` | `sha256`, `randomToken`, `safeEqualHex`, `hashPassword`, `verifyPassword` |
 | `setupSwagger(app)`, `createValidationPipe()`, `AllExceptionsFilter`, `requestIdMiddleware` | Wired once in `main.ts`; don't re-register in modules |
 
 **Imports:** outside `server/src/common/`, import from `'@/common'` (the Nest CLI rewrites the alias at build). Inside `common/`, use relative imports.
@@ -202,21 +242,6 @@ TaskSchema.index({ organizationId: 1, createdAt: -1 });
 **Health:** `GET /api/v1/health/live` (process) and `/health/ready` (MongoDB connected, otherwise 503).
 
 **Server toolchain:** Node 20.19 (installed), NestJS 12 runtime, Nest CLI 11.0.24 + schematics 11.1.0 (v12 needs Node 22). The server uses **TypeScript 6.0.3**, a documented exception (`docs/TECH_STACK.md` § 10a), because TS 7.0 lacks the compiler API the Nest CLI needs. Re-check with `npm view typescript version` and upgrade once TS 7.1 restores the API. The client stays on the latest TS.
-
-Success response shape:
-
-```json
-{
-  "success": true,
-  "message": "Tasks fetched",
-  "data": [],
-  "meta": { "total": 0, "page": 1, "limit": 20, "totalPages": 0, "hasNextPage": false, "hasPrevPage": false }
-}
-```
-
-Errors are not built in controllers. Throw exceptions; the global exception filter returns the standard error format (`statusCode`, `code`, `message`, `details`, `requestId`).
-
-Do not reimplement these helpers inside modules. Extend `@/common` if something is missing.
 
 ## 5. Packages and libraries: latest stable versions only
 
