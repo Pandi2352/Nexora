@@ -21,7 +21,7 @@ export class Role extends BaseDocument {
   @Prop({ type: [String], default: [] })
   permissions: string[];
 
-  @Prop({ type: Boolean, default: true, index: true })
+  @Prop({ type: Boolean, default: true })
   isSystem: boolean;
 }
 

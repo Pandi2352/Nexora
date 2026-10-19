@@ -12,7 +12,7 @@ export enum UserStatus {
 
 @Schema({ collection: 'users', timestamps: true, versionKey: false })
 export class User extends BaseDocument {
-  @Prop({ type: String, required: true, unique: true, lowercase: true, trim: true })
+  @Prop({ type: String, required: true, lowercase: true, trim: true })
   email: string;
 
   @Prop({ type: String, required: true })
@@ -33,7 +33,7 @@ export class User extends BaseDocument {
   @Prop({ type: Boolean, default: false })
   isEmailVerified: boolean;
 
-  @Prop({ type: String, enum: Object.values(UserStatus), default: UserStatus.Active, index: true })
+  @Prop({ type: String, enum: Object.values(UserStatus), default: UserStatus.Active })
   status: UserStatus;
 
   @Prop({ type: Boolean, default: false, index: true })

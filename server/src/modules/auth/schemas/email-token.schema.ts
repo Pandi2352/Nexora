@@ -18,7 +18,7 @@ export class EmailToken extends BaseDocument {
   @Prop({ type: String, enum: Object.values(EmailTokenType), required: true, index: true })
   type: EmailTokenType;
 
-  @Prop({ type: String, required: true, unique: true })
+  @Prop({ type: String, required: true })
   tokenHash: string;
 
   @Prop({ type: Object })

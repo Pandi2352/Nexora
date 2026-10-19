@@ -25,7 +25,7 @@ export class Invitation extends BaseDocument {
   @Prop({ type: String, required: true, index: true })
   invitedById: string;
 
-  @Prop({ type: String, required: true, index: true })
+  @Prop({ type: String, required: true })
   tokenHash: string;
 
   @Prop({
@@ -36,7 +36,7 @@ export class Invitation extends BaseDocument {
   })
   status: InvitationStatus;
 
-  @Prop({ type: Date, required: true, index: true })
+  @Prop({ type: Date, required: true })
   expiresAt: Date;
 }
 
