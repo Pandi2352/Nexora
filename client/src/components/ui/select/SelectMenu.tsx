@@ -10,6 +10,8 @@ interface SelectMenuProps<T = string> {
   multiple?: boolean
   searchable?: boolean
   className?: string
+  placement?: 'top' | 'bottom'
+  maxListHeight?: number
   onSelect: (opt: SelectOption<T>) => void
 }
 
@@ -19,6 +21,8 @@ export function SelectMenu<T = string>({
   multiple = false,
   searchable = true,
   className,
+  placement = 'bottom',
+  maxListHeight,
   onSelect,
 }: SelectMenuProps<T>) {
   const [search, setSearch] = useState('')
@@ -41,7 +45,8 @@ export function SelectMenu<T = string>({
       role="listbox"
       aria-multiselectable={multiple}
       className={cn(
-        'absolute z-50 mt-1 w-full rounded-md border border-slate-200 bg-white py-1.5 animate-in fade-in duration-100',
+        'absolute z-50 w-full rounded-md border border-slate-200 bg-white py-1.5 animate-in fade-in duration-100',
+        placement === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
         className,
       )}
     >
@@ -61,7 +66,10 @@ export function SelectMenu<T = string>({
         </div>
       )}
 
-      <div className="max-h-60 overflow-y-auto custom-scrollbar pt-1">
+      <div
+        style={maxListHeight ? { maxHeight: `${maxListHeight}px` } : undefined}
+        className="max-h-60 overflow-y-auto custom-scrollbar pt-1"
+      >
         {filtered.length === 0 ? (
           <div className="px-3 py-6 text-center text-xs text-slate-500">
             No matching options

@@ -35,6 +35,27 @@ export class EmailTokenRepository {
       .exec();
   }
 
+  async findLatestActiveToken(
+    userId: string,
+    type: EmailTokenType,
+  ): Promise<EmailTokenDocument | null> {
+    return this.emailTokenModel
+      .findOne({
+        userId,
+        type,
+        isUsed: false,
+        expiresAt: { $gt: new Date() },
+      })
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  async incrementAttempts(id: string): Promise<EmailTokenDocument | null> {
+    return this.emailTokenModel
+      .findByIdAndUpdate(id, { $inc: { 'metadata.attempts': 1 } }, { new: true })
+      .exec();
+  }
+
   async invalidatePreviousTokens(userId: string, type: EmailTokenType): Promise<void> {
     await this.emailTokenModel
       .updateMany({ userId, type, isUsed: false }, { $set: { isUsed: true } })

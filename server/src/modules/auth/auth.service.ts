@@ -38,31 +38,62 @@ export class AuthService {
       status: UserStatus.Active,
     });
 
-    const rawToken = await this.tokenService.createVerificationToken(user._id);
-    void this.emailService.sendVerificationEmail(user.email, user.name, rawToken);
+    const rawCode = await this.tokenService.createVerificationToken(user._id, user.email);
+    void this.emailService.sendVerificationEmail(user.email, user.name, rawCode);
 
     return this.mapSafeUser(user);
   }
 
-  async verifyEmail(token: string): Promise<{ message: string }> {
-    const record = await this.tokenService.validateAndConsumeToken(
-      token,
-      EmailTokenType.VerifyEmail,
-    );
+  async verifyEmail(
+    dto: { code?: string; email?: string; token?: string },
+    userAgent?: string,
+    ipAddress?: string,
+  ): Promise<{ user: AuthenticatedUser; accessToken: string; refreshToken: string; message: string }> {
+    let targetUser: UserDocument | null = null;
 
-    await this.usersService.markEmailVerified(record.userId);
-    return { message: 'Email successfully verified' };
+    if (dto.code && dto.email) {
+      targetUser = await this.usersService.findByEmail(dto.email);
+      if (!targetUser) {
+        throw new AppException(HttpStatus.BAD_REQUEST, 'User account not found', ErrorCode.BAD_REQUEST);
+      }
+      await this.tokenService.validateVerificationOtp(targetUser._id, dto.code);
+    } else if (dto.token) {
+      const record = await this.tokenService.validateAndConsumeToken(
+        dto.token,
+        EmailTokenType.VerifyEmail,
+      );
+      targetUser = await this.usersService.findById(record.userId);
+      if (!targetUser) {
+        throw new AppException(HttpStatus.BAD_REQUEST, 'User account not found', ErrorCode.BAD_REQUEST);
+      }
+    } else {
+      throw new AppException(
+        HttpStatus.BAD_REQUEST,
+        'Verification code and email are required',
+        ErrorCode.BAD_REQUEST,
+      );
+    }
+
+    await this.usersService.markEmailVerified(targetUser._id);
+    const updatedUser = (await this.usersService.findById(targetUser._id)) || targetUser;
+    const tokens = await this.tokenService.createSessionAndTokens(updatedUser, userAgent, ipAddress);
+
+    return {
+      user: this.mapSafeUser(updatedUser),
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      message: 'Email successfully verified',
+    };
   }
 
   async resendVerification(email: string): Promise<{ message: string }> {
     const user = await this.usersService.findByEmail(email);
     if (user && !user.isEmailVerified) {
-      await this.tokenService.invalidatePreviousTokens(user._id, EmailTokenType.VerifyEmail);
-      const rawToken = await this.tokenService.createVerificationToken(user._id);
-      void this.emailService.sendVerificationEmail(user.email, user.name, rawToken);
+      const rawCode = await this.tokenService.createVerificationToken(user._id, user.email);
+      void this.emailService.sendVerificationEmail(user.email, user.name, rawCode);
     }
 
-    return { message: 'If an unverified account exists, a link was sent.' };
+    return { message: 'A 6-digit verification code has been sent to your email.' };
   }
 
   async login(
@@ -92,6 +123,14 @@ export class AuthService {
       throw new AppException(
         HttpStatus.FORBIDDEN,
         'Account suspended. Please contact support.',
+        ErrorCode.FORBIDDEN,
+      );
+    }
+
+    if (!user.isEmailVerified) {
+      throw new AppException(
+        HttpStatus.FORBIDDEN,
+        'Please verify your email address before signing in. A 6-digit code was sent to your email.',
         ErrorCode.FORBIDDEN,
       );
     }

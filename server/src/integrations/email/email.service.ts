@@ -74,14 +74,14 @@ export class EmailService implements OnModuleInit {
     return true;
   }
 
-  /** Sends an account email verification link. */
-  async sendVerificationEmail(to: string, name: string, token: string): Promise<boolean> {
-    const verifyUrl = `${this.appOrigin}/verify-email?token=${token}`;
-    const { html, text } = renderVerificationEmail({ name, verifyUrl });
+  /** Sends an account email verification code and link. */
+  async sendVerificationEmail(to: string, name: string, code: string): Promise<boolean> {
+    const verifyUrl = `${this.appOrigin}/verify-email?email=${encodeURIComponent(to)}&code=${code}`;
+    const { html, text } = renderVerificationEmail({ name, code, verifyUrl });
 
     return this.sendMail({
       to,
-      subject: 'Verify your email — Nexora OS',
+      subject: `Your Nexora OS verification code: ${code}`,
       html,
       text,
     });

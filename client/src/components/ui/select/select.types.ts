@@ -29,6 +29,7 @@ export interface BaseSelectProps<T = string> {
   icon?: ComponentType<{ className?: string }>
   id?: string
   cornerAction?: ReactNode
+  placement?: 'auto' | 'top' | 'bottom'
 }
 
 export interface SingleSelectProps<T = string> extends BaseSelectProps<T> {

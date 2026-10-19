@@ -18,16 +18,19 @@ export function RegisterSuccess({ email }: RegisterSuccessProps) {
         </div>
         <CardTitle className="mt-4 text-xl">Verify your email address</CardTitle>
         <CardDescription className="text-slate-600">
-          We've sent a verification link to{' '}
-          <strong className="text-slate-800">{email}</strong>. Please check your inbox to
+          We've sent a 6-digit verification code to{' '}
+          <strong className="text-slate-800">{email}</strong>. Please enter the code to
           activate your account and get started.
         </CardDescription>
       </CardHeader>
-      <CardFooter className="justify-center border-t border-slate-100 pt-4">
-        <Link to="/login" className="w-full">
-          <Button variant="primary" className="w-full">
-            Proceed to Sign In
+      <CardFooter className="flex-col gap-2 border-t border-slate-100 pt-4">
+        <Link to={`/verify-email?email=${encodeURIComponent(email)}`} className="w-full">
+          <Button variant="primary" className="w-full cursor-pointer">
+            Enter 6-Digit Code
           </Button>
+        </Link>
+        <Link to="/login" className="text-xs text-slate-500 hover:text-slate-800">
+          Back to Sign In
         </Link>
       </CardFooter>
     </Card>

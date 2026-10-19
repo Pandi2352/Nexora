@@ -11,6 +11,7 @@ export interface SendEmailOptions {
 /** Payload for verification email template. */
 export interface VerificationEmailProps {
   name: string;
+  code: string;
   verifyUrl: string;
 }
 

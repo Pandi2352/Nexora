@@ -1,5 +1,6 @@
 import { useCallback, useId, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useAutoPlacement } from '@/hooks/useAutoPlacement'
 import { useDismiss } from '@/hooks/useDismiss'
 import { cn } from '@/lib/cn'
 import { DropdownContext } from './dropdown-context'
@@ -10,21 +11,21 @@ interface DropdownProps {
   trigger: ReactNode
   children: ReactNode
   align?: 'start' | 'end'
-  /** Open below (default) or above the trigger. */
-  side?: 'bottom' | 'top'
+  /** Open below, above, or automatically detect viewport space (default: 'auto'). */
+  side?: 'bottom' | 'top' | 'auto'
   className?: string
   triggerClassName?: string
   /** Panel width/padding, e.g. `w-72 py-1.5`. */
   menuClassName?: string
 }
 
-/** Popover menu: closes on outside click, Escape, item select and route change. */
+/** Popover menu: closes on outside click, Escape, item select and route change. Auto-flips when space below is tight. */
 export function Dropdown({
   label,
   trigger,
   children,
   align = 'end',
-  side = 'bottom',
+  side = 'auto',
   className,
   triggerClassName,
   menuClassName,
@@ -33,6 +34,11 @@ export function Dropdown({
   const rootRef = useRef<HTMLDivElement>(null)
   const menuId = useId()
   const { pathname } = useLocation()
+
+  const { placement, updatePosition } = useAutoPlacement(rootRef, open, {
+    preferred: side,
+    minSpace: 240,
+  })
 
   const close = useCallback(() => setOpen(false), [])
   const context = useMemo(() => ({ close }), [close])
@@ -44,6 +50,13 @@ export function Dropdown({
     setOpen(false)
   }
 
+  const handleToggle = () => {
+    if (!open) {
+      updatePosition()
+    }
+    setOpen((prev) => !prev)
+  }
+
   return (
     <div ref={rootRef} className={cn('relative', className)}>
       <button
@@ -52,9 +65,9 @@ export function Dropdown({
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={handleToggle}
         className={cn(
-          'inline-flex items-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
+          'inline-flex items-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 cursor-pointer',
           triggerClassName,
         )}
       >
@@ -67,8 +80,8 @@ export function Dropdown({
           role="menu"
           aria-label={label}
           className={cn(
-            'absolute z-40 max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border border-slate-200 bg-white',
-            side === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2',
+            'absolute z-40 max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border border-slate-200 bg-white animate-in fade-in duration-100',
+            placement === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2',
             align === 'end' ? 'right-0' : 'left-0',
             menuClassName,
           )}

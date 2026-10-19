@@ -48,10 +48,24 @@ export class AuthController {
   @Public()
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Verify email with token' })
-  async verifyEmail(@Body() dto: VerifyEmailDto) {
-    const result = await this.authService.verifyEmail(dto.token);
-    return createApiResponse(result, result.message);
+  @ApiOperation({ summary: 'Verify email with 6-digit code or token' })
+  async verifyEmail(
+    @Body() dto: VerifyEmailDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const userAgent = req.headers['user-agent'];
+    const ipAddress = req.ip;
+
+    const { user, accessToken, refreshToken, message } = await this.authService.verifyEmail(
+      dto,
+      userAgent,
+      ipAddress,
+    );
+
+    this.setRefreshTokenCookie(res, refreshToken);
+
+    return createApiResponse({ user, accessToken }, message);
   }
 
   @Public()

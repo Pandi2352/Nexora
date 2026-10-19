@@ -95,15 +95,54 @@ export class AuthTokenService {
     return this.sessionsService.findByTokenHash(HashUtil.sha256(rawRefreshToken));
   }
 
-  async createVerificationToken(userId: string): Promise<string> {
-    const rawToken = HashUtil.randomToken(32);
+  async createVerificationToken(userId: string, email?: string): Promise<string> {
+    await this.invalidatePreviousTokens(userId, EmailTokenType.VerifyEmail);
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
     await this.emailTokenRepo.create({
       userId,
       type: EmailTokenType.VerifyEmail,
-      tokenHash: HashUtil.sha256(rawToken),
-      expiresAt: DateUtil.addDays(new Date(), 1),
+      tokenHash: HashUtil.sha256(code),
+      expiresAt: DateUtil.addMinutes(new Date(), 15),
+      metadata: { email, attempts: 0 },
     });
-    return rawToken;
+    return code;
+  }
+
+  async validateVerificationOtp(userId: string, code: string) {
+    const token = await this.emailTokenRepo.findLatestActiveToken(
+      userId,
+      EmailTokenType.VerifyEmail,
+    );
+    if (!token) {
+      throw new AppException(
+        HttpStatus.BAD_REQUEST,
+        'Verification code has expired or is invalid. Please request a new code.',
+        ErrorCode.BAD_REQUEST,
+      );
+    }
+
+    const attempts = (token.metadata as { attempts?: number } | undefined)?.attempts ?? 0;
+    if (attempts >= 5) {
+      await this.emailTokenRepo.markAsUsed(token._id);
+      throw new AppException(
+        HttpStatus.BAD_REQUEST,
+        'Too many failed attempts. This code has been invalidated. Please request a new code.',
+        ErrorCode.BAD_REQUEST,
+      );
+    }
+
+    if (token.tokenHash !== HashUtil.sha256(code.trim())) {
+      await this.emailTokenRepo.incrementAttempts(token._id);
+      const remaining = 5 - (attempts + 1);
+      throw new AppException(
+        HttpStatus.BAD_REQUEST,
+        `Incorrect verification code. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`,
+        ErrorCode.BAD_REQUEST,
+      );
+    }
+
+    await this.emailTokenRepo.markAsUsed(token._id);
+    return token;
   }
 
   async createPasswordResetToken(userId: string): Promise<string> {

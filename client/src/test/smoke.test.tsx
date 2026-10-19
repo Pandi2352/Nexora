@@ -21,9 +21,16 @@ async function renderAt(path: string) {
   const root = createRoot(document.getElementById('root')!)
   await act(async () => root.render(<App />))
   // Wait until lazy pages have loaded (the Suspense skeleton is gone), up to 5s.
-  for (let waited = 0; waited < 5000; waited += 25) {
-    await act(async () => new Promise((r) => setTimeout(r, 25)))
-    if (!document.querySelector('[aria-label="Loading page"]')) break
+  for (let waited = 0; waited < 5000; waited += 50) {
+    await act(async () => new Promise((r) => setTimeout(r, 50)))
+    const isLoading = document.querySelector('[aria-label="Loading page"]')
+    if (!isLoading) {
+      if (path.startsWith('/workspace') && !path.startsWith('/workspaces')) {
+        if (document.querySelector('aside#app-sidebar') || document.querySelector('main')) break
+      } else {
+        break
+      }
+    }
   }
   return root
 }

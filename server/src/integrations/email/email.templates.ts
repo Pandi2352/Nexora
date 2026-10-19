@@ -72,15 +72,20 @@ export function renderVerificationEmail(props: VerificationEmailProps): {
 } {
   const bodyHtml = `
     <p>Hi ${props.name},</p>
-    <p>Welcome to <strong>Nexora OS</strong>. Please verify your email address to activate your account and start setting up your workspace.</p>
-    <p>This verification link will expire in 24 hours.</p>
+    <p>Welcome to <strong>Nexora OS</strong>. Please enter the following 6-digit verification code to activate your account and access your workspace:</p>
+    <div style="margin: 28px 0; text-align: center;">
+      <div style="display: inline-block; background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; padding: 14px 28px; font-size: 32px; font-weight: 700; letter-spacing: 10px; color: #4f46e5; font-family: monospace;">
+        ${props.code}
+      </div>
+    </div>
+    <p style="font-size: 13px; color: #64748b; text-align: center;">This code will expire in 15 minutes.</p>
   `;
-  const text = `Hi ${props.name},\n\nPlease verify your email address for Nexora OS by visiting:\n${props.verifyUrl}\n\nThis link will expire in 24 hours.`;
+  const text = `Hi ${props.name},\n\nYour 6-digit verification code for Nexora OS is:\n\n${props.code}\n\nEnter this code on the verification screen, or visit:\n${props.verifyUrl}\n\nThis code will expire in 15 minutes.`;
 
   return {
     html: renderBaseTemplate({
       title: 'Verify your email address',
-      preheader: 'Complete your registration on Nexora OS',
+      preheader: `Your verification code is ${props.code}`,
       bodyHtml,
       actionText: 'Verify Email Address',
       actionUrl: props.verifyUrl,

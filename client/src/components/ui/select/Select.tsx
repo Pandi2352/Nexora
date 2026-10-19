@@ -1,4 +1,5 @@
 import { useId, useRef, useState, type MouseEvent } from 'react'
+import { useAutoPlacement } from '@/hooks/useAutoPlacement'
 import { cn } from '@/lib/cn'
 import { InputFeedback } from '../input-helpers'
 import { SelectMenu } from './SelectMenu'
@@ -30,12 +31,20 @@ export function Select<T = string>(props: SelectProps<T>): React.JSX.Element {
     icon,
     id: customId,
     cornerAction,
+    placement: preferredPlacement,
   } = props
 
   const generatedId = useId()
   const selectId = customId || generatedId
   const containerRef = useRef<HTMLDivElement>(null)
+  const triggerWrapperRef = useRef<HTMLDivElement>(null)
   const [isOpen, setIsOpen] = useState(false)
+
+  const { placement, maxHeight, updatePosition } = useAutoPlacement(
+    triggerWrapperRef,
+    isOpen,
+    { preferred: preferredPlacement ?? 'auto', minSpace: 280 },
+  )
 
   const [uncontrolledSingle, setUncontrolledSingle] = useState<T | undefined>(
     singleProps?.defaultValue,
@@ -65,7 +74,12 @@ export function Select<T = string>(props: SelectProps<T>): React.JSX.Element {
   const selectedOptions = options.filter((opt) => selectedValues.includes(opt.value))
 
   const handleToggle = () => {
-    if (!disabled) setIsOpen((prev) => !prev)
+    if (!disabled) {
+      if (!isOpen) {
+        updatePosition()
+      }
+      setIsOpen((prev) => !prev)
+    }
   }
 
   const handleSelectOption = (opt: SelectOption<T>) => {
@@ -130,7 +144,7 @@ export function Select<T = string>(props: SelectProps<T>): React.JSX.Element {
         </div>
       )}
 
-      <div className="relative">
+      <div ref={triggerWrapperRef} className="relative">
         <SelectTrigger<T>
           id={selectId}
           isOpen={isOpen}
@@ -154,6 +168,12 @@ export function Select<T = string>(props: SelectProps<T>): React.JSX.Element {
             selectedValues={selectedValues}
             multiple={isMulti}
             searchable={searchable ?? options.length > 5}
+            placement={placement}
+            maxListHeight={
+              maxHeight
+                ? Math.max(120, maxHeight - (searchable ?? options.length > 5 ? 56 : 16))
+                : undefined
+            }
             className={menuClassName}
             onSelect={handleSelectOption}
           />

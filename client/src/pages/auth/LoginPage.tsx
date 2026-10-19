@@ -77,9 +77,19 @@ export function LoginPage() {
           {error && (
             <div
               role="alert"
-              className="rounded-md border border-red-200 bg-red-50 p-2.5 text-xs text-red-700"
+              className="rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700 space-y-1.5"
             >
-              {error}
+              <div>{error}</div>
+              {error.toLowerCase().includes('verify your email') && (
+                <div className="pt-1">
+                  <Link
+                    to={`/verify-email?email=${encodeURIComponent(email.trim())}`}
+                    className="font-semibold text-brand-700 underline hover:text-brand-900"
+                  >
+                    Enter your 6-digit verification code &rarr;
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 
