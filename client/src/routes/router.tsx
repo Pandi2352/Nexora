@@ -1,6 +1,5 @@
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import { paths } from '@/config/paths'
-import { defaultWorkspaceSlug } from '@/data/workspaces'
 import { AuthLayout } from '@/layouts/AuthLayout'
 import RouteErrorPage from '@/pages/errors/RouteErrorPage'
 import { pages } from './pages'
@@ -8,8 +7,7 @@ import { publicRoutes } from './publicRoutes'
 import { workspaceRoutes } from './workspaceRoutes'
 
 const router = createBrowserRouter([
-  // Temporary until auth: send "/" to the default workspace.
-  { path: paths.home, element: <Navigate to={paths.workspace(defaultWorkspaceSlug)} replace /> },
+  { path: paths.home, element: <Navigate to={paths.workspaces} replace /> },
   ...publicRoutes,
   workspaceRoutes,
   {

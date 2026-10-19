@@ -10,6 +10,7 @@ interface DropdownItemProps {
   /** Renders a link when set, otherwise a button. */
   to?: string
   onSelect?: () => void
+  onClick?: () => void
   disabled?: boolean
   /** Small note at the end of the row (e.g. "Needs auth API"). */
   hint?: string
@@ -26,6 +27,7 @@ export function DropdownItem({
   icon: Icon,
   to,
   onSelect,
+  onClick,
   disabled,
   hint,
   trailing,
@@ -33,7 +35,7 @@ export function DropdownItem({
   const { close } = useDropdown()
 
   const handleClick = () => {
-    onSelect?.()
+    ;(onSelect ?? onClick)?.()
     close()
   }
 

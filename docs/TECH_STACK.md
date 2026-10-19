@@ -47,7 +47,7 @@ This document lists every technology Nexora OS will use, why it was chosen, when
 | TypeScript (strict) | Type safety | M1 | Proposed |
 | Tailwind CSS v4 | Styling, CSS-first theme tokens | M1 | Proposed |
 | react-router-dom | Client-side routing, route groups (use this package only) | M1 | Installed |
-| Axios | Centralized HTTP client with interceptors | Install when the API client is written | Proposed |
+| `axios` 1.20.0 | Centralized HTTP client with token refresh interceptors | M1 | Installed |
 | React Hook Form | Complex form state | M2 | Proposed |
 | Zod | Runtime schema validation, only where it materially helps | M2 | Proposed |
 | Lucide React | Icons | M1 | Installed |
@@ -73,7 +73,7 @@ This document lists every technology Nexora OS will use, why it was chosen, when
 | `@nestjs/jwt` 12.0.3 | Short-lived stateless access tokens | M2 | Installed |
 | `cookie-parser` 1.4.7 | Parsing HttpOnly cookies for rotating refresh tokens | M2 | Installed |
 | `nodemailer` 10.1.7 | Transactional email delivery (SMTP adapter) | M1 | Installed |
-| Rate limiter (e.g. @nestjs/throttler) | Brute-force protection on auth endpoints | M2 | Proposed |
+| `@nestjs/throttler` 6.7.1 | Rate-limiting & brute-force protection on auth endpoints | M2 | Installed |
 | Structured logger (e.g. pino) | JSON logs with correlation IDs | M1 | Proposed |
 | Jest + Supertest | Unit and API integration tests | M1 | Proposed |
 | Durable queue (e.g. BullMQ) + Redis-compatible store | Background jobs, retries, scheduling | M5 | Deferred — decide when first persistent job is defined |

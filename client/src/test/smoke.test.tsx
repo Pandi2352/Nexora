@@ -1,7 +1,17 @@
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
+import { mockUser } from '@/data/user'
 
 ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
+
+vi.mock('@/services/auth.service', () => ({
+  authService: {
+    refresh: vi.fn().mockResolvedValue('test-token'),
+    getMe: vi.fn().mockResolvedValue(mockUser),
+    login: vi.fn(),
+    logout: vi.fn(),
+  },
+}))
 
 async function renderAt(path: string) {
   window.history.pushState({}, '', path)
