@@ -25,8 +25,12 @@
 
 7. Dashboard ✅
    - KPI metrics, velocity spline chart, team donut, onboarding checklist, recent activity
-8. CRM
-   - Companies, contacts, leads, opportunities, activities
+8. CRM 🚀 (In Progress — [Specification](./MVP2_SALES_CRM_SPECIFICATION.md))
+   - Companies (CRUD, accounts, industry, contacts)
+   - Contacts (Directory, LinkedIn/Twitter, bio)
+   - Leads (Lead details, Funnel info with INR target, Must-Win deal toggle, Contact info)
+   - Opportunities & Pipelines (Kanban stages, quotations, deal value)
+   - Sales Activities (Cold calls, meetings, follow-ups, proposals submitted)
 9. Projects
    - Projects, project members
 10. Tasks

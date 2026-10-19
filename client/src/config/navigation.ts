@@ -43,6 +43,7 @@ export const navigation: NavSection[] = [
           { id: 'leads', label: 'Leads', segment: s.crmLeads },
           { id: 'opportunities', label: 'Opportunities', segment: s.crmOpportunities },
           { id: 'activities', label: 'Activities', segment: s.crmActivities },
+          { id: 'business-units', label: 'Business Units', segment: s.crmBusinessUnits },
         ],
       },
     ],

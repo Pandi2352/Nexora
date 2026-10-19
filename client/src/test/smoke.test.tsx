@@ -47,6 +47,46 @@ test('workspace route renders shell + page in outlet', async () => {
   root.unmount()
 })
 
+test('workspace crm/contacts renders contacts page in outlet', async () => {
+  const root = await renderAt('/workspace/acme/crm/contacts')
+  expect(document.querySelector('aside#app-sidebar')).not.toBeNull()
+  expect(document.querySelector('main h1')?.textContent).toBe('Contacts')
+  expect(document.title).toBe('Contacts · Nexora OS')
+  root.unmount()
+})
+
+test('workspace crm/leads renders leads page in outlet', async () => {
+  const root = await renderAt('/workspace/acme/crm/leads')
+  expect(document.querySelector('aside#app-sidebar')).not.toBeNull()
+  expect(document.querySelector('main h1')?.textContent).toBe('Leads')
+  expect(document.title).toBe('Leads · Nexora OS')
+  root.unmount()
+})
+
+test('workspace crm/opportunities renders opportunities page in outlet', async () => {
+  const root = await renderAt('/workspace/acme/crm/opportunities')
+  expect(document.querySelector('aside#app-sidebar')).not.toBeNull()
+  expect(document.querySelector('main h1')?.textContent).toBe('Opportunities')
+  expect(document.title).toBe('Opportunities · Nexora OS')
+  root.unmount()
+})
+
+test('workspace crm/activities renders sales activities page in outlet', async () => {
+  const root = await renderAt('/workspace/acme/crm/activities')
+  expect(document.querySelector('aside#app-sidebar')).not.toBeNull()
+  expect(document.querySelector('main h1')?.textContent).toBe('Sales Activities')
+  expect(document.title).toBe('Sales Activities · Nexora OS')
+  root.unmount()
+})
+
+test('workspace crm/business-units renders business units page in outlet', async () => {
+  const root = await renderAt('/workspace/acme/crm/business-units')
+  expect(document.querySelector('aside#app-sidebar')).not.toBeNull()
+  expect(document.querySelector('main h1')?.textContent).toBe('Business Units')
+  expect(document.title).toBe('Business Units · Nexora OS')
+  root.unmount()
+})
+
 test('workspace settings/general renders general settings page in outlet', async () => {
   const root = await renderAt('/workspace/acme/settings/general')
   expect(document.querySelector('aside#app-sidebar')).not.toBeNull()

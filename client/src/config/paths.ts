@@ -11,6 +11,7 @@ export const workspaceSegments = {
   crmLeads: 'crm/leads',
   crmOpportunities: 'crm/opportunities',
   crmActivities: 'crm/activities',
+  crmBusinessUnits: 'crm/business-units',
   projects: 'projects',
   tasks: 'tasks',
   documents: 'documents',

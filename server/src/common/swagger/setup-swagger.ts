@@ -12,6 +12,7 @@ export function setupSwagger(app: INestApplication, path = 'docs') {
         '- Success envelope `{ success, message, data, meta }`; errors `{ statusCode, code, message, details, requestId }`',
     )
     .setVersion('1.0.0')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'access-token')
     .build();
 
