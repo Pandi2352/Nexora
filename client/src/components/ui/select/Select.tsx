@@ -5,7 +5,9 @@ import { SelectMenu } from './SelectMenu'
 import { SelectTrigger } from './SelectTrigger'
 import type { MultiSelectProps, SelectOption, SelectProps, SingleSelectProps } from './select.types'
 
-export function Select<T = string>(props: SelectProps<T>) {
+export function Select<T = string>(props: MultiSelectProps<T>): React.JSX.Element
+export function Select<T = string>(props: SingleSelectProps<T>): React.JSX.Element
+export function Select<T = string>(props: SelectProps<T>): React.JSX.Element {
   const isMulti = Boolean(props.multiple)
   const singleProps = !isMulti ? (props as SingleSelectProps<T>) : undefined
   const multiProps = isMulti ? (props as MultiSelectProps<T>) : undefined

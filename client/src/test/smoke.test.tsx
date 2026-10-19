@@ -48,6 +48,22 @@ test('workspace settings/members renders members page in outlet', async () => {
   root.unmount()
 })
 
+test('workspace settings/teams renders teams page in outlet', async () => {
+  const root = await renderAt('/workspace/acme/settings/teams')
+  expect(document.querySelector('aside#app-sidebar')).not.toBeNull()
+  expect(document.querySelector('main h1')?.textContent).toBe('Teams & Departments')
+  expect(document.body.textContent).toContain('configured')
+  root.unmount()
+})
+
+test('workspace settings/roles renders roles and permissions page in outlet', async () => {
+  const root = await renderAt('/workspace/acme/settings/roles')
+  expect(document.querySelector('aside#app-sidebar')).not.toBeNull()
+  expect(document.querySelector('main h1')?.textContent).toBe('Roles & Permissions')
+  expect(document.body.textContent).toContain('Security Model')
+  root.unmount()
+})
+
 test('workspace account renders account settings page in outlet', async () => {
   const root = await renderAt('/workspace/acme/account')
   expect(document.querySelector('aside#app-sidebar')).not.toBeNull()

@@ -11,6 +11,8 @@ import { HealthModule } from './modules/health/health.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
 import { MembershipsModule } from './modules/memberships/memberships.module';
+import { TeamsModule } from './modules/teams/teams.module';
+import { RolesModule } from './modules/roles/roles.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { MembershipsModule } from './modules/memberships/memberships.module';
     OrganizationsModule,
     InvitationsModule,
     MembershipsModule,
+    TeamsModule,
+    RolesModule,
     HealthModule,
   ],
 })
