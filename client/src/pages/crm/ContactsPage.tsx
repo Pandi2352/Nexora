@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Plus, Users } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Button, SearchInput, Select, Spinner, type SelectOption } from '@/components/ui'
+import { Button, SearchInput, Select, Spinner, toast, type SelectOption } from '@/components/ui'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
@@ -43,19 +43,30 @@ export default function ContactsPage() {
 
   const handleSaveContact = async (payload: CreateContactPayload) => {
     if (!slug) return
-    if (editingContact) {
-      await crmService.updateContact(slug, editingContact.id, payload)
-    } else {
-      await crmService.createContact(slug, payload)
+    try {
+      if (editingContact) {
+        await crmService.updateContact(slug, editingContact.id, payload)
+        toast.success('Contact updated successfully')
+      } else {
+        await crmService.createContact(slug, payload)
+        toast.success('Contact created successfully')
+      }
+      await loadData()
+    } catch {
+      toast.error('Failed to save contact')
     }
-    await loadData()
   }
 
   const handleDeleteContact = async (contactId: string) => {
     if (!slug) return
     if (!window.confirm('Are you sure you want to delete this contact?')) return
-    await crmService.deleteContact(slug, contactId)
-    await loadData()
+    try {
+      await crmService.deleteContact(slug, contactId)
+      toast.success('Contact deleted successfully')
+      await loadData()
+    } catch {
+      toast.error('Failed to delete contact')
+    }
   }
 
   const companyFilterOptions: SelectOption[] = [

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Calendar, FileText, PhoneCall, Plus, Zap } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Button, SearchInput, Select, Spinner, type SelectOption } from '@/components/ui'
+import { Button, SearchInput, Select, Spinner, toast, type SelectOption } from '@/components/ui'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
@@ -70,15 +70,25 @@ export default function ActivitiesPage() {
 
   const handleSaveActivity = async (payload: CreateActivityPayload) => {
     if (!slug) return
-    await crmService.logActivity(slug, payload)
-    await loadData()
+    try {
+      await crmService.logActivity(slug, payload)
+      toast.success('Activity logged successfully')
+      await loadData()
+    } catch {
+      toast.error('Failed to log activity')
+    }
   }
 
   const handleDeleteActivity = async (activityId: string) => {
     if (!slug) return
     if (!window.confirm('Are you sure you want to delete this activity?')) return
-    await crmService.deleteActivity(slug, activityId)
-    await loadData()
+    try {
+      await crmService.deleteActivity(slug, activityId)
+      toast.success('Activity deleted successfully')
+      await loadData()
+    } catch {
+      toast.error('Failed to delete activity')
+    }
   }
 
   return (

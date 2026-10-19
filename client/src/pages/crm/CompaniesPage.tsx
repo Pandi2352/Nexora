@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Building2, Plus } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Button, SearchInput, Select, Spinner, type SelectOption } from '@/components/ui'
+import { Button, SearchInput, Select, Spinner, toast, type SelectOption } from '@/components/ui'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
@@ -49,19 +49,30 @@ export default function CompaniesPage() {
 
   const handleSaveCompany = async (payload: CreateCompanyPayload) => {
     if (!slug) return
-    if (editingCompany) {
-      await crmService.updateCompany(slug, editingCompany.id, payload)
-    } else {
-      await crmService.createCompany(slug, payload)
+    try {
+      if (editingCompany) {
+        await crmService.updateCompany(slug, editingCompany.id, payload)
+        toast.success('Company updated successfully')
+      } else {
+        await crmService.createCompany(slug, payload)
+        toast.success('Company created successfully')
+      }
+      await loadCompanies()
+    } catch {
+      toast.error('Failed to save company')
     }
-    await loadCompanies()
   }
 
   const handleDeleteCompany = async (companyId: string) => {
     if (!slug) return
     if (!window.confirm('Are you sure you want to delete this company?')) return
-    await crmService.deleteCompany(slug, companyId)
-    await loadCompanies()
+    try {
+      await crmService.deleteCompany(slug, companyId)
+      toast.success('Company deleted successfully')
+      await loadCompanies()
+    } catch {
+      toast.error('Failed to delete company')
+    }
   }
 
   const filteredCompanies = companies.filter((c) => {

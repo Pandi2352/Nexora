@@ -1,5 +1,5 @@
-import { ArrowLeft, ArrowRight, Building2, Calendar, MoreVertical, Pencil, Star, Trash2 } from 'lucide-react'
-import { Dropdown, DropdownItem } from '@/components/ui'
+import { ArrowLeft, ArrowRight, Building2, Calendar, Pencil, Star, Trash2 } from 'lucide-react'
+import { Tooltip } from '@/components/ui'
 import type { Opportunity, OpportunityStage } from '@/types/crm'
 import { QuotationStatusBadge } from './OpportunityStageBadge'
 import { formatDateSafe, formatINR } from '../crm-formatters'
@@ -45,26 +45,28 @@ export function OpportunityCard({
           )}
         </div>
 
-        <Dropdown
-          label="Deal actions"
-          align="end"
-          trigger={
-            <span className="flex size-6 items-center justify-center rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer">
-              <MoreVertical className="size-3.5" />
-            </span>
-          }
-        >
-          <DropdownItem
-            label="Edit Opportunity"
-            icon={Pencil}
-            onClick={() => onEdit(opportunity)}
-          />
-          <DropdownItem
-            label="Delete Opportunity"
-            icon={Trash2}
-            onClick={() => onDelete(opportunity.id)}
-          />
-        </Dropdown>
+        <div className="flex items-center gap-1 shrink-0">
+          <Tooltip content="Edit Deal">
+            <button
+              type="button"
+              onClick={() => onEdit(opportunity)}
+              className="size-6.5 flex items-center justify-center rounded-md border border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100 hover:text-sky-800 transition-colors cursor-pointer"
+              aria-label="Edit deal"
+            >
+              <Pencil className="size-3" />
+            </button>
+          </Tooltip>
+          <Tooltip content="Delete Deal">
+            <button
+              type="button"
+              onClick={() => onDelete(opportunity.id)}
+              className="size-6.5 flex items-center justify-center rounded-md border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 transition-colors cursor-pointer"
+              aria-label="Delete deal"
+            >
+              <Trash2 className="size-3" />
+            </button>
+          </Tooltip>
+        </div>
       </div>
 
       <div className="flex items-baseline justify-between pt-1">

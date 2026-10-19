@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Button, Input, Modal, Select, type SelectOption } from '@/components/ui'
+import { Button, CountrySelect, Input, Modal, Select, type SelectOption } from '@/components/ui'
 import type { Company, CompanyStatus, CreateCompanyPayload } from '@/types/crm'
+import { IndustrySelect } from './IndustrySelect'
 
 interface CompanyModalProps {
   isOpen: boolean
@@ -100,7 +101,7 @@ export function CompanyModal({ isOpen, onClose, onSave, company }: CompanyModalP
       onClose={onClose}
       title={company ? 'Edit Company' : 'Add New Company'}
       description="Create or update an enterprise account in your CRM directory."
-      size="lg"
+      size="xl"
       footer={
         <div className="flex items-center justify-end gap-3">
           <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
@@ -112,14 +113,14 @@ export function CompanyModal({ isOpen, onClose, onSave, company }: CompanyModalP
         </div>
       }
     >
-      <form id="company-form" onSubmit={handleSubmit} className="space-y-4 py-1">
+      <form id="company-form" onSubmit={handleSubmit} className="space-y-5 py-2">
         {error && (
           <div className="p-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded-md">
             {error}
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <Input
             label="Company Name"
             placeholder="Acme Global Inc"
@@ -128,15 +129,14 @@ export function CompanyModal({ isOpen, onClose, onSave, company }: CompanyModalP
             required
             autoFocus
           />
-          <Input
-            label="Industry"
-            placeholder="Technology, SaaS, Manufacturing..."
+          <IndustrySelect
             value={industry}
-            onChange={(e) => setIndustry(e.target.value)}
+            onChange={setIndustry}
+            disabled={isSubmitting}
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <Input
             label="Website"
             placeholder="https://example.com"
@@ -152,7 +152,7 @@ export function CompanyModal({ isOpen, onClose, onSave, company }: CompanyModalP
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           <Input
             label="Phone Number"
             placeholder="+91 98765 43210"
@@ -174,7 +174,7 @@ export function CompanyModal({ isOpen, onClose, onSave, company }: CompanyModalP
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           <Select
             label="Employee Count"
             value={employeeCount}
@@ -187,11 +187,10 @@ export function CompanyModal({ isOpen, onClose, onSave, company }: CompanyModalP
             value={city}
             onChange={(e) => setCity(e.target.value)}
           />
-          <Input
+          <CountrySelect
             label="Country"
-            placeholder="India"
             value={country}
-            onChange={(e) => setCountry(e.target.value)}
+            onChange={(c) => setCountry(c)}
           />
         </div>
       </form>

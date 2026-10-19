@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Plus, Star, TrendingUp } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Button, SearchInput, Spinner, type SelectOption } from '@/components/ui'
+import { Button, SearchInput, Spinner, toast, type SelectOption } from '@/components/ui'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
@@ -79,12 +79,18 @@ export default function OpportunitiesPage() {
 
   const handleSaveOpp = async (payload: CreateOpportunityPayload) => {
     if (!slug) return
-    if (editingOpp) {
-      await crmService.updateOpportunity(slug, editingOpp.id, payload)
-    } else {
-      await crmService.createOpportunity(slug, payload)
+    try {
+      if (editingOpp) {
+        await crmService.updateOpportunity(slug, editingOpp.id, payload)
+        toast.success('Opportunity updated successfully')
+      } else {
+        await crmService.createOpportunity(slug, payload)
+        toast.success('Opportunity created successfully')
+      }
+      await loadData()
+    } catch {
+      toast.error('Failed to save opportunity')
     }
-    await loadData()
   }
 
   const handleMoveStage = async (oppId: string, nextStage: OpportunityStage) => {
@@ -93,15 +99,26 @@ export default function OpportunitiesPage() {
     setOpportunities((prev) =>
       prev.map((o) => (o.id === oppId ? { ...o, stage: nextStage } : o)),
     )
-    await crmService.updateOpportunity(slug, oppId, { stage: nextStage })
-    await loadData()
+    try {
+      await crmService.updateOpportunity(slug, oppId, { stage: nextStage })
+      toast.info('Deal stage updated')
+      await loadData()
+    } catch {
+      toast.error('Failed to update deal stage')
+      await loadData()
+    }
   }
 
   const handleDeleteOpp = async (oppId: string) => {
     if (!slug) return
     if (!window.confirm('Are you sure you want to delete this opportunity?')) return
-    await crmService.deleteOpportunity(slug, oppId)
-    await loadData()
+    try {
+      await crmService.deleteOpportunity(slug, oppId)
+      toast.success('Opportunity deleted successfully')
+      await loadData()
+    } catch {
+      toast.error('Failed to delete opportunity')
+    }
   }
 
   return (

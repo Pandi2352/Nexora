@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Layers, Plus } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Button, SearchInput, Spinner } from '@/components/ui'
+import { Button, SearchInput, Spinner, toast } from '@/components/ui'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
@@ -50,19 +50,30 @@ export default function BusinessUnitsPage() {
 
   const handleSaveUnit = async (payload: CreateBusinessUnitPayload) => {
     if (!slug) return
-    if (editingUnit) {
-      await crmService.updateBusinessUnit(slug, editingUnit.id, payload)
-    } else {
-      await crmService.createBusinessUnit(slug, payload)
+    try {
+      if (editingUnit) {
+        await crmService.updateBusinessUnit(slug, editingUnit.id, payload)
+        toast.success('Business unit updated successfully')
+      } else {
+        await crmService.createBusinessUnit(slug, payload)
+        toast.success('Business unit created successfully')
+      }
+      await loadUnits()
+    } catch {
+      toast.error('Failed to save business unit')
     }
-    await loadUnits()
   }
 
   const handleDeleteUnit = async (unitId: string) => {
     if (!slug) return
     if (!window.confirm('Are you sure you want to delete this business unit?')) return
-    await crmService.deleteBusinessUnit(slug, unitId)
-    await loadUnits()
+    try {
+      await crmService.deleteBusinessUnit(slug, unitId)
+      toast.success('Business unit deleted successfully')
+      await loadUnits()
+    } catch {
+      toast.error('Failed to delete business unit')
+    }
   }
 
   return (

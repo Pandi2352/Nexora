@@ -1,5 +1,5 @@
-import { MoreVertical, Pencil, Star, Trash2 } from 'lucide-react'
-import { Badge, Dropdown, DropdownItem } from '@/components/ui'
+import { Pencil, Star, Trash2 } from 'lucide-react'
+import { Badge, Tooltip } from '@/components/ui'
 import type { BusinessUnitItem } from '@/types/crm'
 import { formatDateSafe } from '../crm-formatters'
 
@@ -54,26 +54,28 @@ export function BusinessUnitTable({ units, onEdit, onDelete }: BusinessUnitTable
                 {formatDateSafe(unit.createdAt)}
               </td>
               <td className="py-3 px-4 text-right">
-                <Dropdown
-                  label="Unit actions"
-                  align="end"
-                  trigger={
-                    <span className="flex size-8 items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer">
-                      <MoreVertical className="size-4" />
-                    </span>
-                  }
-                >
-                  <DropdownItem
-                    label="Edit Business Unit"
-                    icon={Pencil}
-                    onClick={() => onEdit(unit)}
-                  />
-                  <DropdownItem
-                    label="Delete Unit"
-                    icon={Trash2}
-                    onClick={() => onDelete(unit.id)}
-                  />
-                </Dropdown>
+                <div className="flex items-center justify-end gap-1.5">
+                  <Tooltip content="Edit Business Unit">
+                    <button
+                      type="button"
+                      onClick={() => onEdit(unit)}
+                      className="size-8 flex items-center justify-center rounded-md border border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100 hover:text-sky-800 transition-colors cursor-pointer"
+                      aria-label="Edit business unit"
+                    >
+                      <Pencil className="size-3.5" />
+                    </button>
+                  </Tooltip>
+                  <Tooltip content="Delete Business Unit">
+                    <button
+                      type="button"
+                      onClick={() => onDelete(unit.id)}
+                      className="size-8 flex items-center justify-center rounded-md border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 transition-colors cursor-pointer"
+                      aria-label="Delete business unit"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </Tooltip>
+                </div>
               </td>
             </tr>
           ))}

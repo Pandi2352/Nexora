@@ -1,5 +1,5 @@
-import { Building2, ExternalLink, Mail, MoreVertical, Pencil, Phone, Star, Trash2 } from 'lucide-react'
-import { Dropdown, DropdownItem } from '@/components/ui'
+import { Building2, ExternalLink, Mail, Pencil, Phone, Star, Trash2 } from 'lucide-react'
+import { Tooltip } from '@/components/ui'
 import type { Company, Contact } from '@/types/crm'
 
 interface ContactTableProps {
@@ -106,26 +106,28 @@ export function ContactTable({ contacts, companies, onEdit, onDelete }: ContactT
                   </div>
                 </td>
                 <td className="py-3 px-4 text-right">
-                  <Dropdown
-                    label="Contact actions"
-                    align="end"
-                    trigger={
-                      <span className="flex size-8 items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer">
-                        <MoreVertical className="size-4" />
-                      </span>
-                    }
-                  >
-                    <DropdownItem
-                      label="Edit Contact"
-                      icon={Pencil}
-                      onClick={() => onEdit(contact)}
-                    />
-                    <DropdownItem
-                      label="Delete Contact"
-                      icon={Trash2}
-                      onClick={() => onDelete(contact.id)}
-                    />
-                  </Dropdown>
+                  <div className="flex items-center justify-end gap-1.5">
+                    <Tooltip content="Edit Contact">
+                      <button
+                        type="button"
+                        onClick={() => onEdit(contact)}
+                        className="size-8 flex items-center justify-center rounded-md border border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100 hover:text-sky-800 transition-colors cursor-pointer"
+                        aria-label="Edit contact"
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                    </Tooltip>
+                    <Tooltip content="Delete Contact">
+                      <button
+                        type="button"
+                        onClick={() => onDelete(contact.id)}
+                        className="size-8 flex items-center justify-center rounded-md border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 transition-colors cursor-pointer"
+                        aria-label="Delete contact"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    </Tooltip>
+                  </div>
                 </td>
               </tr>
             )

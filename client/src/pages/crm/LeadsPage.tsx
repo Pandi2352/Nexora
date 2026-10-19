@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Plus, Star, Target } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Button, SearchInput, Select, Spinner, type SelectOption } from '@/components/ui'
+import { Button, SearchInput, Select, Spinner, toast, type SelectOption } from '@/components/ui'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
@@ -91,25 +91,41 @@ export default function LeadsPage() {
 
   const handleSaveLead = async (payload: CreateLeadPayload) => {
     if (!slug) return
-    if (editingLead) {
-      await crmService.updateLead(slug, editingLead.id, payload)
-    } else {
-      await crmService.createLead(slug, payload)
+    try {
+      if (editingLead) {
+        await crmService.updateLead(slug, editingLead.id, payload)
+        toast.success('Lead updated successfully')
+      } else {
+        await crmService.createLead(slug, payload)
+        toast.success('Lead created successfully')
+      }
+      await loadData()
+    } catch {
+      toast.error('Failed to save lead')
     }
-    await loadData()
   }
 
   const handleConvertLead = async (leadId: string) => {
     if (!slug) return
-    await crmService.convertLead(slug, leadId)
-    await loadData()
+    try {
+      await crmService.convertLead(slug, leadId)
+      toast.success('Lead converted to deal successfully!')
+      await loadData()
+    } catch {
+      toast.error('Failed to convert lead')
+    }
   }
 
   const handleDeleteLead = async (leadId: string) => {
     if (!slug) return
     if (!window.confirm('Are you sure you want to delete this lead?')) return
-    await crmService.deleteLead(slug, leadId)
-    await loadData()
+    try {
+      await crmService.deleteLead(slug, leadId)
+      toast.success('Lead deleted successfully')
+      await loadData()
+    } catch {
+      toast.error('Failed to delete lead')
+    }
   }
 
   return (

@@ -1,4 +1,5 @@
 import { Building2, Calendar, Trash2 } from 'lucide-react'
+import { Tooltip } from '@/components/ui'
 import type { Company, SalesActivity } from '@/types/crm'
 import { ActivityOutcomeBadge, ActivityTypeBadge } from './ActivityTypeBadge'
 import { formatDateSafe, formatINR } from '../crm-formatters'
@@ -61,14 +62,16 @@ export function ActivityTimeline({
               </span>
 
               {onDelete && (
-                <button
-                  type="button"
-                  onClick={() => onDelete(act.id)}
-                  title="Delete activity"
-                  className="p-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
-                >
-                  <Trash2 className="size-3.5" />
-                </button>
+                <Tooltip content="Delete Activity">
+                  <button
+                    type="button"
+                    onClick={() => onDelete(act.id)}
+                    className="size-7 flex items-center justify-center rounded-md border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 transition-colors cursor-pointer"
+                    aria-label="Delete activity"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </Tooltip>
               )}
             </div>
           </div>

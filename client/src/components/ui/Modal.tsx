@@ -10,7 +10,7 @@ export interface ModalProps {
   description?: string
   children: ReactNode
   footer?: ReactNode
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
   className?: string
 }
 
@@ -18,6 +18,8 @@ const sizeClasses = {
   sm: 'max-w-md',
   md: 'max-w-lg',
   lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+  '2xl': 'max-w-5xl',
 }
 
 export function Modal({
@@ -57,7 +59,7 @@ export function Modal({
     >
       <div
         className={cn(
-          'w-full rounded-md border border-slate-200 bg-white text-slate-900 flex flex-col',
+          'w-full max-h-[90vh] rounded-md border border-slate-200 bg-white text-slate-900 flex flex-col',
           sizeClasses[size],
           className,
         )}

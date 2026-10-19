@@ -1,5 +1,5 @@
-import { ArrowRight, Mail, MoreVertical, Pencil, Phone, Trash2 } from 'lucide-react'
-import { Dropdown, DropdownItem } from '@/components/ui'
+import { ArrowRight, Mail, Pencil, Phone, Trash2 } from 'lucide-react'
+import { Tooltip } from '@/components/ui'
 import type { Lead } from '@/types/crm'
 import { LeadStatusBadge, MustWinBadge } from './LeadStatusBadge'
 import { formatDateSafe, formatINR } from '../crm-formatters'
@@ -86,31 +86,38 @@ export function LeadTable({
                 </td>
 
                 <td className="py-3 px-4 text-right">
-                  <Dropdown
-                    label="Lead actions"
-                    align="end"
-                    trigger={
-                      <span className="flex size-8 items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer">
-                        <MoreVertical className="size-4" />
-                      </span>
-                    }
-                  >
-                    <DropdownItem
-                      label="Convert to Deal"
-                      icon={ArrowRight}
-                      onClick={() => onConvert(lead)}
-                    />
-                    <DropdownItem
-                      label="Edit Lead"
-                      icon={Pencil}
-                      onClick={() => onEdit(lead)}
-                    />
-                    <DropdownItem
-                      label="Delete Lead"
-                      icon={Trash2}
-                      onClick={() => onDelete(lead.id)}
-                    />
-                  </Dropdown>
+                  <div className="flex items-center justify-end gap-1.5">
+                    <Tooltip content="Convert to Deal">
+                      <button
+                        type="button"
+                        onClick={() => onConvert(lead)}
+                        className="size-8 flex items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 transition-colors cursor-pointer"
+                        aria-label="Convert lead to deal"
+                      >
+                        <ArrowRight className="size-3.5" />
+                      </button>
+                    </Tooltip>
+                    <Tooltip content="Edit Lead">
+                      <button
+                        type="button"
+                        onClick={() => onEdit(lead)}
+                        className="size-8 flex items-center justify-center rounded-md border border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100 hover:text-sky-800 transition-colors cursor-pointer"
+                        aria-label="Edit lead"
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                    </Tooltip>
+                    <Tooltip content="Delete Lead">
+                      <button
+                        type="button"
+                        onClick={() => onDelete(lead.id)}
+                        className="size-8 flex items-center justify-center rounded-md border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 transition-colors cursor-pointer"
+                        aria-label="Delete lead"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    </Tooltip>
+                  </div>
                 </td>
               </tr>
             )
