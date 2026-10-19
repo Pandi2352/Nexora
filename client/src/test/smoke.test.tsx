@@ -72,6 +72,14 @@ test('workspace settings/roles renders roles and permissions page in outlet', as
   root.unmount()
 })
 
+test('workspace activity renders activity and audit page in outlet', async () => {
+  const root = await renderAt('/workspace/acme/activity')
+  expect(document.querySelector('aside#app-sidebar')).not.toBeNull()
+  expect(document.querySelector('main h1')?.textContent).toBe('Activity & Audit Trail')
+  expect(document.body.textContent).toContain('events recorded')
+  root.unmount()
+})
+
 test('workspace account renders account settings page in outlet', async () => {
   const root = await renderAt('/workspace/acme/account')
   expect(document.querySelector('aside#app-sidebar')).not.toBeNull()

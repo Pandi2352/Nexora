@@ -13,6 +13,7 @@ import { InvitationsModule } from './modules/invitations/invitations.module';
 import { MembershipsModule } from './modules/memberships/memberships.module';
 import { TeamsModule } from './modules/teams/teams.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { AuditModule } from './modules/audit/audit.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { RolesModule } from './modules/roles/roles.module';
     MembershipsModule,
     TeamsModule,
     RolesModule,
+    AuditModule,
     HealthModule,
   ],
 })

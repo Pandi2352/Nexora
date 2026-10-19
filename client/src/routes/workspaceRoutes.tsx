@@ -27,6 +27,7 @@ export const workspaceRoutes: RouteObject = {
             { path: workspaceSegments.settingsMembers, element: <pages.Members /> },
             { path: workspaceSegments.settingsTeams, element: <pages.Teams /> },
             { path: workspaceSegments.settingsRoles, element: <pages.Roles /> },
+            { path: workspaceSegments.activity, element: <pages.Activity /> },
             { path: workspaceSegments.account, element: <pages.Account /> },
             ...Object.values(workspaceSegments)
               .filter(
@@ -35,6 +36,7 @@ export const workspaceRoutes: RouteObject = {
                   segment !== workspaceSegments.settingsMembers &&
                   segment !== workspaceSegments.settingsTeams &&
                   segment !== workspaceSegments.settingsRoles &&
+                  segment !== workspaceSegments.activity &&
                   segment !== workspaceSegments.account,
               )
               .map(placeholder),
