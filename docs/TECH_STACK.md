@@ -72,6 +72,7 @@ This document lists every technology Nexora OS will use, why it was chosen, when
 | `@node-rs/argon2` 2.2.2 | Argon2id password hashing (prebuilt N-API binaries) | M2 | Installed |
 | `@nestjs/jwt` 12.0.3 | Short-lived stateless access tokens | M2 | Installed |
 | `cookie-parser` 1.4.7 | Parsing HttpOnly cookies for rotating refresh tokens | M2 | Installed |
+| `nodemailer` 10.1.7 | Transactional email delivery (SMTP adapter) | M1 | Installed |
 | Rate limiter (e.g. @nestjs/throttler) | Brute-force protection on auth endpoints | M2 | Proposed |
 | Structured logger (e.g. pino) | JSON logs with correlation IDs | M1 | Proposed |
 | Jest + Supertest | Unit and API integration tests | M1 | Proposed |
