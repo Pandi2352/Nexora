@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Layers, Plus } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Button, SearchInput, Spinner, toast } from '@/components/ui'
+import { Button, Pagination, SearchInput, Spinner, toast, usePagination } from '@/components/ui'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
@@ -76,6 +76,16 @@ export default function BusinessUnitsPage() {
     }
   }
 
+  const {
+    paginatedItems: paginatedUnits,
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+  } = usePagination({ items: filteredUnits, initialPageSize: 10 })
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -111,7 +121,7 @@ export default function BusinessUnitsPage() {
 
       {/* Search */}
       <div className="flex items-center justify-between">
-        <div className="flex-1 max-w-sm">
+        <div className="w-full sm:w-80">
           <SearchInput
             placeholder="Search business units or codes..."
             value={search}
@@ -138,11 +148,21 @@ export default function BusinessUnitsPage() {
           }
         />
       ) : (
-        <BusinessUnitTable
-          units={filteredUnits}
-          onEdit={(unit) => { setEditingUnit(unit); setModalOpen(true) }}
-          onDelete={handleDeleteUnit}
-        />
+        <div className="space-y-3">
+          <BusinessUnitTable
+            units={paginatedUnits}
+            onEdit={(unit) => { setEditingUnit(unit); setModalOpen(true) }}
+            onDelete={handleDeleteUnit}
+          />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+          />
+        </div>
       )}
 
       <BusinessUnitModal

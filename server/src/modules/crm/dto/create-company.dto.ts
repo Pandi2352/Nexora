@@ -94,6 +94,12 @@ export class CreateCompanyDto {
   @IsOptional()
   @IsUUID('4')
   ownerId?: string;
+
+  @ApiPropertyOptional({ example: 'Key strategic client' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  notes?: string;
 }
 
 export class UpdateCompanyDto extends CreateCompanyDto {}

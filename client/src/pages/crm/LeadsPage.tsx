@@ -2,7 +2,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Plus, Star, Target } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Button, SearchInput, Select, Spinner, toast, type SelectOption } from '@/components/ui'
+import {
+  Button,
+  Pagination,
+  SearchInput,
+  Select,
+  Spinner,
+  toast,
+  usePagination,
+  type SelectOption,
+} from '@/components/ui'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
@@ -128,6 +137,16 @@ export default function LeadsPage() {
     }
   }
 
+  const {
+    paginatedItems: paginatedLeads,
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+  } = usePagination({ items: leads, initialPageSize: 10 })
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -216,13 +235,23 @@ export default function LeadsPage() {
           }
         />
       ) : (
-        <LeadTable
-          leads={leads}
-          ownerNameMap={ownerNameMap}
-          onEdit={(lead) => { setEditingLead(lead); setModalOpen(true) }}
-          onConvert={(lead) => setConvertingLead(lead)}
-          onDelete={handleDeleteLead}
-        />
+        <div className="space-y-3">
+          <LeadTable
+            leads={paginatedLeads}
+            ownerNameMap={ownerNameMap}
+            onEdit={(lead) => { setEditingLead(lead); setModalOpen(true) }}
+            onConvert={(lead) => setConvertingLead(lead)}
+            onDelete={handleDeleteLead}
+          />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+          />
+        </div>
       )}
 
       {/* Modals */}

@@ -16,7 +16,7 @@ export interface CountrySelectProps {
 
 export function CountrySelect({
   label = 'Country',
-  value,
+  value = '',
   onChange,
   error,
   placeholder = 'Select country...',
@@ -24,17 +24,32 @@ export function CountrySelect({
   required,
   className,
 }: CountrySelectProps) {
+  const matchedCountry = useMemo(() => {
+    if (!value || typeof value !== 'string') return null
+    const query = value.trim().toLowerCase()
+    return COUNTRIES.find(
+      (c) => c.name.toLowerCase() === query || c.code.toLowerCase() === query,
+    )
+  }, [value])
+
+  const normalizedValue = matchedCountry ? matchedCountry.name : (value ? value.trim() : '')
+
   const options = useMemo<SelectOption<string>[]>(() => {
-    return COUNTRIES.map((c) => ({
+    const list: SelectOption<string>[] = COUNTRIES.map((c) => ({
       value: c.name,
       label: `${c.name} (${c.code})`,
     }))
-  }, [])
+
+    if (normalizedValue && !list.some((o) => o.value.toLowerCase() === normalizedValue.toLowerCase())) {
+      list.unshift({ value: normalizedValue, label: normalizedValue })
+    }
+    return list
+  }, [normalizedValue])
 
   return (
     <Select<string>
       label={label}
-      value={value || ''}
+      value={normalizedValue}
       options={options}
       onChange={(val: string) => onChange(val || '')}
       placeholder={placeholder}

@@ -1,4 +1,5 @@
-import { useState, useRef, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { cn } from '@/lib/cn'
 
 export interface TooltipProps {
@@ -17,10 +18,102 @@ export function Tooltip({
   delay = 150,
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false)
+  const [coords, setCoords] = useState<CSSProperties>({})
+  const [arrowAlign, setArrowAlign] = useState<'center' | 'left' | 'right'>('center')
+  const triggerRef = useRef<HTMLDivElement>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const updatePosition = useCallback(() => {
+    if (!triggerRef.current) return
+    const rect = triggerRef.current.getBoundingClientRect()
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth
+
+    const isNearRight = viewportWidth - rect.right < 80
+    const isNearLeft = rect.left < 80
+    const centerX = rect.left + rect.width / 2
+
+    let align: 'center' | 'left' | 'right' = 'center'
+    let style: CSSProperties = {
+      position: 'fixed',
+      zIndex: 9999,
+      pointerEvents: 'none',
+    }
+
+    if (placement === 'top') {
+      if (isNearRight) {
+        align = 'right'
+        style = {
+          ...style,
+          top: `${rect.top - 8}px`,
+          left: `${rect.right}px`,
+          transform: 'translate(-100%, -100%)',
+        }
+      } else if (isNearLeft) {
+        align = 'left'
+        style = {
+          ...style,
+          top: `${rect.top - 8}px`,
+          left: `${rect.left}px`,
+          transform: 'translate(0, -100%)',
+        }
+      } else {
+        align = 'center'
+        style = {
+          ...style,
+          top: `${rect.top - 8}px`,
+          left: `${centerX}px`,
+          transform: 'translate(-50%, -100%)',
+        }
+      }
+    } else if (placement === 'bottom') {
+      if (isNearRight) {
+        align = 'right'
+        style = {
+          ...style,
+          top: `${rect.bottom + 8}px`,
+          left: `${rect.right}px`,
+          transform: 'translate(-100%, 0)',
+        }
+      } else if (isNearLeft) {
+        align = 'left'
+        style = {
+          ...style,
+          top: `${rect.bottom + 8}px`,
+          left: `${rect.left}px`,
+          transform: 'translate(0, 0)',
+        }
+      } else {
+        align = 'center'
+        style = {
+          ...style,
+          top: `${rect.bottom + 8}px`,
+          left: `${centerX}px`,
+          transform: 'translate(-50%, 0)',
+        }
+      }
+    } else if (placement === 'left') {
+      style = {
+        ...style,
+        top: `${rect.top + rect.height / 2}px`,
+        left: `${rect.left - 8}px`,
+        transform: 'translate(-100%, -50%)',
+      }
+    } else if (placement === 'right') {
+      style = {
+        ...style,
+        top: `${rect.top + rect.height / 2}px`,
+        left: `${rect.right + 8}px`,
+        transform: 'translate(0, -50%)',
+      }
+    }
+
+    setArrowAlign(align)
+    setCoords(style)
+  }, [placement])
 
   const show = () => {
     timerRef.current = setTimeout(() => {
+      updatePosition()
       setIsVisible(true)
     }, delay)
   }
@@ -33,38 +126,73 @@ export function Tooltip({
     setIsVisible(false)
   }
 
-  const placementClasses = {
-    top: 'bottom-full left-1/2 -translate-x-1/2 mb-1.5',
-    bottom: 'top-full left-1/2 -translate-x-1/2 mt-1.5',
-    left: 'right-full top-1/2 -translate-y-1/2 mr-1.5',
-    right: 'left-full top-1/2 -translate-y-1/2 ml-1.5',
-  }
+  useEffect(() => {
+    if (!isVisible) return
+
+    const handleScrollOrResize = () => {
+      updatePosition()
+    }
+
+    window.addEventListener('resize', handleScrollOrResize)
+    window.addEventListener('scroll', handleScrollOrResize, true)
+
+    return () => {
+      window.removeEventListener('resize', handleScrollOrResize)
+      window.removeEventListener('scroll', handleScrollOrResize, true)
+    }
+  }, [isVisible, updatePosition])
 
   if (!content) return <>{children}</>
 
   return (
-    <div
-      className="relative inline-flex items-center"
-      onMouseEnter={show}
-      onMouseLeave={hide}
-      onFocus={show}
-      onBlur={hide}
-    >
-      {children}
-      {isVisible && (
-        <div
-          role="tooltip"
-          className={cn(
-            'absolute z-50 pointer-events-none px-2 py-1 text-[11px] font-medium',
-            'bg-slate-900 text-white rounded-md whitespace-nowrap',
-            'border border-slate-700 select-none animate-in fade-in duration-100',
-            placementClasses[placement],
-            className,
-          )}
-        >
-          {content}
-        </div>
-      )}
-    </div>
+    <>
+      <div
+        ref={triggerRef}
+        className="inline-flex items-center"
+        onMouseEnter={show}
+        onMouseLeave={hide}
+        onFocus={show}
+        onBlur={hide}
+      >
+        {children}
+      </div>
+
+      {isVisible &&
+        createPortal(
+          <div
+            role="tooltip"
+            style={coords}
+            className={cn(
+              'relative px-2.5 py-1 text-[11px] font-medium leading-none',
+              'bg-slate-900 text-white rounded-md whitespace-nowrap shadow-none',
+              'border border-slate-700/80 select-none animate-in fade-in zoom-in-95 duration-100',
+              className,
+            )}
+          >
+            {content}
+            {/* Modern arrow pointer pointing towards the trigger */}
+            <span
+              className={cn(
+                'absolute size-1.5 rotate-45 bg-slate-900 border-slate-700/80 pointer-events-none',
+                placement === 'top' &&
+                  (arrowAlign === 'right'
+                    ? 'right-3 -bottom-[3.5px] border-r border-b'
+                    : arrowAlign === 'left'
+                      ? 'left-3 -bottom-[3.5px] border-r border-b'
+                      : 'left-1/2 -translate-x-1/2 -bottom-[3.5px] border-r border-b'),
+                placement === 'bottom' &&
+                  (arrowAlign === 'right'
+                    ? 'right-3 -top-[3.5px] border-l border-t'
+                    : arrowAlign === 'left'
+                      ? 'left-3 -top-[3.5px] border-l border-t'
+                      : 'left-1/2 -translate-x-1/2 -top-[3.5px] border-l border-t'),
+                placement === 'left' && 'top-1/2 -translate-y-1/2 -right-[3.5px] border-t border-r',
+                placement === 'right' && 'top-1/2 -translate-y-1/2 -left-[3.5px] border-b border-l',
+              )}
+            />
+          </div>,
+          document.body,
+        )}
+    </>
   )
 }

@@ -2,7 +2,16 @@ import { useCallback, useEffect, useState } from 'react'
 import { Plus, Users } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Button, SearchInput, Select, Spinner, toast, type SelectOption } from '@/components/ui'
+import {
+  Button,
+  Pagination,
+  SearchInput,
+  Select,
+  Spinner,
+  toast,
+  usePagination,
+  type SelectOption,
+} from '@/components/ui'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
@@ -74,6 +83,16 @@ export default function ContactsPage() {
     ...companies.map((c) => ({ value: c.id, label: c.name })),
   ]
 
+  const {
+    paginatedItems: paginatedContacts,
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+  } = usePagination({ items: contacts, initialPageSize: 10 })
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -93,21 +112,23 @@ export default function ContactsPage() {
         }
       />
 
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        <div className="flex-1">
-          <SearchInput
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search contacts by name, email, or designation..."
-            size="md"
-          />
-        </div>
-        <div className="w-full sm:w-56 shrink-0">
-          <Select
-            value={companyFilter}
-            options={companyFilterOptions}
-            onChange={(val) => setCompanyFilter(val)}
-          />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="w-full sm:w-80">
+            <SearchInput
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search contacts by name, email, or title..."
+              size="md"
+            />
+          </div>
+          <div className="w-full sm:w-56 shrink-0">
+            <Select
+              value={companyFilter}
+              options={companyFilterOptions}
+              onChange={(val) => setCompanyFilter(val)}
+            />
+          </div>
         </div>
       </div>
 
@@ -138,15 +159,25 @@ export default function ContactsPage() {
           }
         />
       ) : (
-        <ContactTable
-          contacts={contacts}
-          companies={companies}
-          onEdit={(cnt) => {
-            setEditingContact(cnt)
-            setModalOpen(true)
-          }}
-          onDelete={handleDeleteContact}
-        />
+        <div className="space-y-3">
+          <ContactTable
+            contacts={paginatedContacts}
+            companies={companies}
+            onEdit={(cnt) => {
+              setEditingContact(cnt)
+              setModalOpen(true)
+            }}
+            onDelete={handleDeleteContact}
+          />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+          />
+        </div>
       )}
 
       <ContactModal

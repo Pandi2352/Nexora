@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import type { HydratedDocument } from 'mongoose';
-import { BaseDocument } from '@/database/base.schema';
+import { BaseDocument, defaultSchemaOptions, applyBaseSchemaPlugins } from '@/database/base.schema';
 
 export type CompanyDocument = HydratedDocument<Company>;
 
@@ -21,7 +21,7 @@ export class CompanyAddress {
   country?: string;
 }
 
-@Schema({ collection: 'companies', timestamps: true, versionKey: false })
+@Schema({ collection: 'companies', ...defaultSchemaOptions })
 export class Company extends BaseDocument {
   @Prop({ type: String, required: true, index: true })
   organizationId: string;
@@ -59,8 +59,11 @@ export class Company extends BaseDocument {
 
   @Prop({ type: String, index: true })
   ownerId?: string;
+
+  @Prop({ type: String, trim: true, maxlength: 1000 })
+  notes?: string;
 }
 
-export const CompanySchema = SchemaFactory.createForClass(Company);
+export const CompanySchema = applyBaseSchemaPlugins(SchemaFactory.createForClass(Company));
 CompanySchema.index({ organizationId: 1, name: 1 });
 CompanySchema.index({ organizationId: 1, createdAt: -1 });

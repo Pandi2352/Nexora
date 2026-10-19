@@ -21,3 +21,6 @@ export { Tooltip, type TooltipProps } from './Tooltip'
 export { Toaster } from './Toaster'
 export { toast, type ToastType } from './toast-service'
 export { CountrySelect, type CountrySelectProps } from './CountrySelect'
+export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog'
+export { Pagination, usePagination, type PaginationProps, type UsePaginationOptions, type UsePaginationReturn } from './pagination'
+

@@ -59,14 +59,22 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/companies`,
       { params },
     )
-    return res.data
+    const list = res.data || []
+    return list.map((c: any) => ({
+      ...c,
+      id: c.id || c._id,
+    }))
   },
 
   async getCompany(orgSlug: string, id: string): Promise<CompanyDetail> {
     const res = await apiClient.get<ApiResponseWrapper<CompanyDetail>>(
       `/organizations/${orgSlug}/crm/companies/${id}`,
     )
-    return res.data
+    const data = res.data as any
+    return {
+      ...data,
+      id: data.id || data._id,
+    }
   },
 
   async createCompany(orgSlug: string, payload: CreateCompanyPayload): Promise<Company> {
@@ -74,7 +82,11 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/companies`,
       payload,
     )
-    return res.data
+    const data = res.data as any
+    return {
+      ...data,
+      id: data.id || data._id,
+    }
   },
 
   async updateCompany(orgSlug: string, id: string, payload: UpdateCompanyPayload): Promise<Company> {
@@ -82,10 +94,17 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/companies/${id}`,
       payload,
     )
-    return res.data
+    const data = res.data as any
+    return {
+      ...data,
+      id: data.id || data._id,
+    }
   },
 
   async deleteCompany(orgSlug: string, id: string): Promise<void> {
+    if (!id || id === 'undefined') {
+      throw new Error('Valid company ID is required for deletion')
+    }
     await apiClient.delete(`/organizations/${orgSlug}/crm/companies/${id}`)
   },
 
