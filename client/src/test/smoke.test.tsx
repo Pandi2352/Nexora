@@ -13,40 +13,6 @@ vi.mock('@/services/auth.service', () => ({
   },
 }))
 
-vi.mock('@/services/crm.service', () => ({
-  crmService: {
-    listCompanies: vi.fn().mockResolvedValue([{ id: 'c1', name: 'Acme Inc', status: 'customer' }]),
-    getCompany: vi.fn().mockResolvedValue(null),
-    createCompany: vi.fn(),
-    updateCompany: vi.fn(),
-    deleteCompany: vi.fn(),
-    listContacts: vi.fn().mockResolvedValue([]),
-    createContact: vi.fn(),
-    updateContact: vi.fn(),
-    deleteContact: vi.fn(),
-    listLeads: vi.fn().mockResolvedValue([]),
-    createLead: vi.fn(),
-    updateLead: vi.fn(),
-    convertLead: vi.fn(),
-    deleteLead: vi.fn(),
-    listActivities: vi.fn().mockResolvedValue([]),
-    logActivity: vi.fn(),
-    updateActivity: vi.fn(),
-    deleteActivity: vi.fn(),
-    listOpportunities: vi.fn().mockResolvedValue([]),
-    getOpportunity: vi.fn().mockResolvedValue(null),
-    createOpportunity: vi.fn(),
-    updateOpportunity: vi.fn(),
-    updateOpportunityStage: vi.fn(),
-    deleteOpportunity: vi.fn(),
-    getPipelineSummary: vi.fn().mockResolvedValue({ totalValue: 0, byStage: {} }),
-    listBusinessUnits: vi.fn().mockResolvedValue([]),
-    createBusinessUnit: vi.fn(),
-    updateBusinessUnit: vi.fn(),
-    deleteBusinessUnit: vi.fn(),
-  },
-}))
-
 async function renderAt(path: string) {
   window.history.pushState({}, '', path)
   vi.resetModules()
