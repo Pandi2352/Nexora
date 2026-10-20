@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import type { HydratedDocument } from 'mongoose';
-import { BaseDocument } from '@/database/base.schema';
+import { BaseDocument, defaultSchemaOptions, applyBaseSchemaPlugins } from '@/database/base.schema';
 
 export type ContactDocument = HydratedDocument<Contact>;
 
-@Schema({ collection: 'contacts', timestamps: true, versionKey: false })
+@Schema({ ...defaultSchemaOptions, collection: 'contacts' })
 export class Contact extends BaseDocument {
   @Prop({ type: String, required: true, index: true })
   organizationId: string;
@@ -49,7 +49,7 @@ export class Contact extends BaseDocument {
   isPrimary: boolean;
 }
 
-export const ContactSchema = SchemaFactory.createForClass(Contact);
+export const ContactSchema = applyBaseSchemaPlugins(SchemaFactory.createForClass(Contact));
 ContactSchema.index({ organizationId: 1, email: 1 });
 ContactSchema.index({ organizationId: 1, companyId: 1 });
 ContactSchema.index({ organizationId: 1, createdAt: -1 });

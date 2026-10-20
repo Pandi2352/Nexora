@@ -25,7 +25,7 @@ export function ActivityTimeline({
 
         return (
           <div
-            key={act.id}
+            key={act.id || (act as any)._id}
             className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 rounded-md border border-slate-200 bg-white p-4 transition-colors hover:border-slate-300"
           >
             <div className="space-y-2 flex-1">
@@ -65,7 +65,7 @@ export function ActivityTimeline({
                 <Tooltip content="Delete Activity">
                   <button
                     type="button"
-                    onClick={() => onDelete(act.id)}
+                    onClick={() => onDelete(act.id || (act as any)._id)}
                     className="size-7 flex items-center justify-center rounded-md border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 transition-colors cursor-pointer"
                     aria-label="Delete activity"
                   >

@@ -38,7 +38,9 @@ export const navigation: NavSection[] = [
         label: 'CRM',
         icon: Handshake,
         children: [
+          { id: 'crm-dashboard', label: 'CRM Dashboard', segment: s.crmDashboard },
           { id: 'companies', label: 'Companies', segment: s.crmCompanies },
+          { id: 'contacts', label: 'Contacts', segment: s.crmContacts },
           { id: 'leads', label: 'Leads', segment: s.crmLeads },
           { id: 'opportunities', label: 'Opportunities', segment: s.crmOpportunities },
           { id: 'activities', label: 'Activities', segment: s.crmActivities },

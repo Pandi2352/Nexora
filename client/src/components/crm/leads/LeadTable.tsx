@@ -181,12 +181,16 @@ export function LeadTable({
                 {/* Action Buttons with Modern Colored Tooltips */}
                 <td className="py-3.5 px-4 text-right">
                   <div className="flex items-center justify-end gap-1.5">
-                    <Tooltip content="Convert to Deal">
+                    <Tooltip content={lead.status === 'qualified' ? 'Convert / Add Deal' : 'Convert to Deal'}>
                       <button
                         type="button"
                         onClick={() => onConvert(lead)}
-                        className="size-8 inline-flex items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 transition-colors cursor-pointer"
-                        aria-label="Convert lead to deal"
+                        className={`size-8 inline-flex items-center justify-center rounded-md border transition-colors cursor-pointer ${
+                          lead.status === 'qualified'
+                            ? 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-400'
+                            : 'border-emerald-200 bg-emerald-50/70 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300'
+                        }`}
+                        aria-label={lead.status === 'qualified' ? 'Convert / Add deal' : 'Convert lead to deal'}
                       >
                         <ArrowRight className="size-3.5" />
                       </button>

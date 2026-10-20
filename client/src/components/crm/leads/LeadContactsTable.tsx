@@ -2,6 +2,7 @@ import { useState } from 'react'
 import {
   Check,
   Mail,
+  Pencil,
   Phone,
   Plus,
   Star,
@@ -19,6 +20,7 @@ interface LeadContactsTableProps {
 
 export function LeadContactsTable({ contacts, onChange }: LeadContactsTableProps) {
   const [showAddForm, setShowAddForm] = useState(false)
+  const [editingContactId, setEditingContactId] = useState<string | null>(null)
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [designation, setDesignation] = useState('')
@@ -27,7 +29,31 @@ export function LeadContactsTable({ contacts, onChange }: LeadContactsTableProps
   const [isPrimary, setIsPrimary] = useState(contacts.length === 0)
   const [formError, setFormError] = useState('')
 
-  const handleAddContact = () => {
+  const handleOpenAdd = () => {
+    setEditingContactId(null)
+    setFirstName('')
+    setLastName('')
+    setDesignation('')
+    setEmail('')
+    setPhone('')
+    setIsPrimary(contacts.length === 0)
+    setFormError('')
+    setShowAddForm(true)
+  }
+
+  const handleOpenEdit = (contact: LeadContactItem) => {
+    setEditingContactId(contact.id)
+    setFirstName(contact.firstName)
+    setLastName(contact.lastName || '')
+    setDesignation(contact.designation || '')
+    setEmail(contact.email)
+    setPhone(contact.phone || '')
+    setIsPrimary(!!contact.isPrimary)
+    setFormError('')
+    setShowAddForm(true)
+  }
+
+  const handleSaveContact = () => {
     if (!firstName.trim()) {
       setFormError('First name is required.')
       return
@@ -37,21 +63,39 @@ export function LeadContactsTable({ contacts, onChange }: LeadContactsTableProps
       return
     }
 
-    const newContact: LeadContactItem = {
-      id: `cnt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      designation: designation.trim() || undefined,
-      email: email.trim().toLowerCase(),
-      phone: phone.trim() || undefined,
-      isPrimary: isPrimary || contacts.length === 0,
-    }
+    let updated: LeadContactItem[] = []
 
-    let updated = [...contacts]
-    if (newContact.isPrimary) {
-      updated = updated.map((c) => ({ ...c, isPrimary: false }))
+    if (editingContactId) {
+      updated = contacts.map((c) => {
+        if (c.id === editingContactId) {
+          return {
+            ...c,
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            designation: designation.trim() || undefined,
+            email: email.trim().toLowerCase(),
+            phone: phone.trim() || undefined,
+            isPrimary,
+          }
+        }
+        return isPrimary ? { ...c, isPrimary: false } : c
+      })
+    } else {
+      const newContact: LeadContactItem = {
+        id: `cnt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        designation: designation.trim() || undefined,
+        email: email.trim().toLowerCase(),
+        phone: phone.trim() || undefined,
+        isPrimary: isPrimary || contacts.length === 0,
+      }
+      updated = [...contacts]
+      if (newContact.isPrimary) {
+        updated = updated.map((c) => ({ ...c, isPrimary: false }))
+      }
+      updated.push(newContact)
     }
-    updated.push(newContact)
 
     onChange(updated)
     setFirstName('')
@@ -61,6 +105,7 @@ export function LeadContactsTable({ contacts, onChange }: LeadContactsTableProps
     setPhone('')
     setIsPrimary(false)
     setFormError('')
+    setEditingContactId(null)
     setShowAddForm(false)
   }
 
@@ -70,6 +115,10 @@ export function LeadContactsTable({ contacts, onChange }: LeadContactsTableProps
       remaining[0].isPrimary = true
     }
     onChange(remaining)
+    if (editingContactId === id) {
+      setShowAddForm(false)
+      setEditingContactId(null)
+    }
   }
 
   const handleSetPrimary = (id: string) => {
@@ -98,7 +147,7 @@ export function LeadContactsTable({ contacts, onChange }: LeadContactsTableProps
             type="button"
             variant="secondary"
             size="sm"
-            onClick={() => setShowAddForm(true)}
+            onClick={handleOpenAdd}
             className="cursor-pointer"
           >
             <Plus className="size-3.5 mr-1" />
@@ -107,18 +156,19 @@ export function LeadContactsTable({ contacts, onChange }: LeadContactsTableProps
         )}
       </div>
 
-      {/* Inline Contact Creator */}
+      {/* Inline Contact Creator / Editor */}
       {showAddForm && (
         <div className="rounded-md border border-brand-200 bg-brand-50/20 p-4 space-y-3">
           <div className="flex items-center justify-between border-b border-brand-100 pb-2">
             <span className="text-xs font-semibold text-brand-900 flex items-center gap-1.5">
               <User className="size-3.5 text-brand-600" />
-              New Contact Details
+              {editingContactId ? 'Edit Contact Details' : 'New Contact Details'}
             </span>
             <button
               type="button"
               onClick={() => {
                 setShowAddForm(false)
+                setEditingContactId(null)
                 setFormError('')
               }}
               className="text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
@@ -207,11 +257,11 @@ export function LeadContactsTable({ contacts, onChange }: LeadContactsTableProps
                 type="button"
                 variant="primary"
                 size="sm"
-                onClick={handleAddContact}
+                onClick={handleSaveContact}
                 className="cursor-pointer"
               >
                 <Check className="size-3.5 mr-1" />
-                Add to Lead Contacts
+                {editingContactId ? 'Update Contact' : 'Add to Lead Contacts'}
               </Button>
             </div>
           </div>
@@ -227,7 +277,7 @@ export function LeadContactsTable({ contacts, onChange }: LeadContactsTableProps
               <th className="py-2.5 px-3">Designation</th>
               <th className="py-2.5 px-3">Email & Phone</th>
               <th className="py-2.5 px-3">Decision Maker</th>
-              <th className="py-2.5 px-3 text-right">Action</th>
+              <th className="py-2.5 px-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -291,16 +341,28 @@ export function LeadContactsTable({ contacts, onChange }: LeadContactsTableProps
                   </td>
 
                   <td className="py-2.5 px-3 text-right">
-                    <Tooltip content="Remove contact from lead">
-                      <button
-                        type="button"
-                        onClick={() => handleRemove(contact.id)}
-                        className="size-7 inline-flex items-center justify-center rounded-md border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors cursor-pointer"
-                        aria-label="Remove contact"
-                      >
-                        <Trash2 className="size-3.5" />
-                      </button>
-                    </Tooltip>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Tooltip content="Edit contact">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(contact)}
+                          className="size-7 inline-flex items-center justify-center rounded-md border border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100 transition-colors cursor-pointer"
+                          aria-label="Edit contact"
+                        >
+                          <Pencil className="size-3.5" />
+                        </button>
+                      </Tooltip>
+                      <Tooltip content="Remove contact from lead">
+                        <button
+                          type="button"
+                          onClick={() => handleRemove(contact.id)}
+                          className="size-7 inline-flex items-center justify-center rounded-md border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors cursor-pointer"
+                          aria-label="Remove contact"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </Tooltip>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -309,15 +371,11 @@ export function LeadContactsTable({ contacts, onChange }: LeadContactsTableProps
         </table>
       </div>
 
-      {/* Colorful Info Note Below Contact Table */}
-      <div className="rounded-md border border-teal-200 bg-teal-50/60 p-2.5 text-xs text-teal-800 flex items-start gap-2">
-        <Users className="size-4 shrink-0 text-teal-600 mt-0.5" />
-        <div>
-          <span className="font-semibold text-teal-900">Multi-Stakeholder Management:</span>{' '}
-          Add all procurement officers, project sponsors, and architects involved in this deal. The
-          primary decision maker will receive automated proposals, notifications, and meeting invites.
-        </div>
-      </div>
+      {/* Borderless Color Text Info Note */}
+      <p className="flex items-center gap-1.5 text-xs text-teal-600 font-medium">
+        <Users className="size-3.5 shrink-0" />
+        <span>Add all procurement officers and architects. The primary decision maker will receive proposals and meeting invites.</span>
+      </p>
     </div>
   )
 }

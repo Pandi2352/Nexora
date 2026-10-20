@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import type { HydratedDocument } from 'mongoose';
-import { BaseDocument } from '@/database/base.schema';
+import { BaseDocument, defaultSchemaOptions, applyBaseSchemaPlugins } from '@/database/base.schema';
 
 export type OpportunityDocument = HydratedDocument<Opportunity>;
 
-@Schema({ collection: 'opportunities', timestamps: true, versionKey: false })
+@Schema({ ...defaultSchemaOptions, collection: 'opportunities' })
 export class Opportunity extends BaseDocument {
   @Prop({ type: String, required: true, index: true })
   organizationId: string;
@@ -59,7 +59,7 @@ export class Opportunity extends BaseDocument {
   notes?: string;
 }
 
-export const OpportunitySchema = SchemaFactory.createForClass(Opportunity);
+export const OpportunitySchema = applyBaseSchemaPlugins(SchemaFactory.createForClass(Opportunity));
 OpportunitySchema.index({ organizationId: 1, stage: 1 });
 OpportunitySchema.index({ organizationId: 1, isMustWin: 1 });
 OpportunitySchema.index({ organizationId: 1, ownerId: 1 });

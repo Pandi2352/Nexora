@@ -29,6 +29,8 @@ export const workspaceRoutes: RouteObject = {
             { path: workspaceSegments.settingsTeams, element: <pages.Teams /> },
             { path: workspaceSegments.settingsRoles, element: <pages.Roles /> },
             { path: workspaceSegments.settingsSecurity, element: <pages.SecuritySettings /> },
+            { path: 'crm', element: <Navigate to={workspaceSegments.crmDashboard} replace /> },
+            { path: workspaceSegments.crmDashboard, element: <pages.CrmDashboard /> },
             { path: workspaceSegments.crmCompanies, element: <pages.Companies /> },
             { path: workspaceSegments.crmContacts, element: <pages.Contacts /> },
             { path: workspaceSegments.crmLeads, element: <pages.Leads /> },
@@ -41,6 +43,7 @@ export const workspaceRoutes: RouteObject = {
               .filter(
                 (segment) =>
                   segment !== workspaceSegments.dashboard &&
+                  segment !== workspaceSegments.crmDashboard &&
                   segment !== workspaceSegments.crmCompanies &&
                   segment !== workspaceSegments.crmContacts &&
                   segment !== workspaceSegments.crmLeads &&

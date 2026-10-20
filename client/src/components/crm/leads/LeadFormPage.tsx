@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import {
   Button,
+  DatePicker,
   Input,
   Select,
   Textarea,
@@ -276,7 +277,7 @@ export function LeadFormPage({
             </h3>
           </div>
 
-          {/* Company Name with Blue Info Note */}
+          {/* Company Name with Blue Info Text */}
           <div>
             <label className="text-xs font-semibold text-slate-700 block mb-1">
               Company Name <span className="text-rose-500">*</span>
@@ -287,13 +288,13 @@ export function LeadFormPage({
               onChange={(e) => setCompanyName(e.target.value)}
               required
             />
-            <div className="mt-1.5 flex items-start gap-1.5 rounded-md border border-sky-200 bg-sky-50/70 px-2.5 py-1.5 text-[11px] text-sky-800">
-              <Building className="size-3.5 shrink-0 text-sky-600 mt-0.5" />
-              <span>Enter the legal trade name of the client organization or enterprise buyer.</span>
-            </div>
+            <p className="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-sky-600">
+              <Building className="size-3 shrink-0" />
+              <span>Enter legal trade name of the client organization or enterprise buyer.</span>
+            </p>
           </div>
 
-          {/* Business Unit with Violet Info Note */}
+          {/* Business Unit with Violet Info Text */}
           <div>
             <label className="text-xs font-semibold text-slate-700 block mb-1">
               Assigned Business Unit
@@ -313,13 +314,13 @@ export function LeadFormPage({
                     ]
               }
             />
-            <div className="mt-1.5 flex items-start gap-1.5 rounded-md border border-purple-200 bg-purple-50/70 px-2.5 py-1.5 text-[11px] text-purple-800">
-              <Layers className="size-3.5 shrink-0 text-purple-600 mt-0.5" />
-              <span>Routes client solution delivery, post-sales governance, and executive SLAs.</span>
-            </div>
+            <p className="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-purple-600">
+              <Layers className="size-3 shrink-0" />
+              <span>Routes solution delivery, post-sales governance, and executive SLAs.</span>
+            </p>
           </div>
 
-          {/* Lead Owner with Indigo Info Note */}
+          {/* Lead Owner with Indigo Info Text */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-semibold text-slate-700 block mb-1">
@@ -334,10 +335,10 @@ export function LeadFormPage({
                     : [{ value: 'usr-default-001', label: 'Admin (Workspace Lead)' }]
                 }
               />
-              <div className="mt-1.5 flex items-start gap-1 rounded-md border border-indigo-200 bg-indigo-50/70 px-2 py-1 text-[11px] text-indigo-800">
-                <User className="size-3 shrink-0 text-indigo-600 mt-0.5" />
+              <p className="mt-1 flex items-center gap-1 text-[11px] font-medium text-indigo-600">
+                <User className="size-3 shrink-0" />
                 <span>Account executive responsible for qualification.</span>
-              </div>
+              </p>
             </div>
 
             <div>
@@ -349,10 +350,10 @@ export function LeadFormPage({
                 onChange={(val) => setStatus(val as LeadStatus)}
                 options={STATUS_OPTIONS}
               />
-              <div className="mt-1.5 flex items-start gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] text-slate-700">
-                <Sparkles className="size-3 shrink-0 text-slate-500 mt-0.5" />
+              <p className="mt-1 flex items-center gap-1 text-[11px] font-medium text-slate-500">
+                <Sparkles className="size-3 shrink-0" />
                 <span>Determines forecasting weighting and funnel stage.</span>
-              </div>
+              </p>
             </div>
           </div>
         </div>
@@ -366,7 +367,7 @@ export function LeadFormPage({
             </h3>
           </div>
 
-          {/* Annual Target INR with Emerald Info Note */}
+          {/* Annual Target INR with Emerald Info Text */}
           <div>
             <label className="text-xs font-semibold text-slate-700 block mb-1">
               Annual Revenue Target (₹ INR) <span className="text-rose-500">*</span>
@@ -379,10 +380,10 @@ export function LeadFormPage({
               onChange={(e) => setAnnualRevenueTarget(e.target.value)}
               required
             />
-            <div className="mt-1.5 flex items-start gap-1.5 rounded-md border border-emerald-200 bg-emerald-50/70 px-2.5 py-1.5 text-[11px] text-emerald-800">
-              <span className="font-bold text-emerald-700">₹</span>
+            <p className="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-emerald-600">
+              <DollarSign className="size-3 shrink-0" />
               <span>Projected gross annualized deal value in Indian Rupees for financial quota tracking.</span>
-            </div>
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -422,7 +423,7 @@ export function LeadFormPage({
               />
             </div>
 
-            {/* Must-Win Deal Switch with Amber Info Note */}
+            {/* Must-Win Deal Switch with Amber Info Text */}
             <div>
               <label className="text-xs font-semibold text-slate-700 block mb-1">
                 Priority Tier
@@ -446,10 +447,10 @@ export function LeadFormPage({
             </div>
           </div>
 
-          <div className="flex items-start gap-1.5 rounded-md border border-amber-200 bg-amber-50/60 px-2.5 py-1.5 text-[11px] text-amber-800">
-            <Star className="size-3.5 shrink-0 text-amber-600 mt-0.5" />
+          <p className="flex items-center gap-1.5 text-[11px] font-medium text-amber-600">
+            <Star className="size-3.5 shrink-0" />
             <span>Marking as Must-Win pins this deal to top executive charts and high-alert alerts.</span>
-          </div>
+          </p>
         </div>
       </div>
 
@@ -491,25 +492,29 @@ export function LeadFormPage({
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-700 block mb-1">
-              Next Outreach Date
-            </label>
-            <Input
-              type="date"
+            <DatePicker
+              label="Next Outreach Date"
               value={nextContactDate}
-              onChange={(e) => setNextContactDate(e.target.value)}
+              onChange={setNextContactDate}
+              placeholder="Pick follow-up date"
             />
+            <p className="mt-1 flex items-center gap-1 text-[11px] font-medium text-blue-600">
+              <Calendar className="size-3 shrink-0" />
+              <span>Next scheduled follow-up</span>
+            </p>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-700 block mb-1">
-              Target Close Date
-            </label>
-            <Input
-              type="date"
+            <DatePicker
+              label="Target Close Date"
               value={expectedConversionDate}
-              onChange={(e) => setExpectedConversionDate(e.target.value)}
+              onChange={setExpectedConversionDate}
+              placeholder="Pick closing date"
             />
+            <p className="mt-1 flex items-center gap-1 text-[11px] font-medium text-rose-600">
+              <Sparkles className="size-3 shrink-0" />
+              <span>Forecasted quarter closing</span>
+            </p>
           </div>
         </div>
 

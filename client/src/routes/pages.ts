@@ -14,6 +14,7 @@ export const pages = {
   Roles: lazyPage(() => import('@/pages/roles/RolesPage')),
   GeneralSettings: lazyPage(() => import('@/pages/settings/GeneralSettingsPage')),
   SecuritySettings: lazyPage(() => import('@/pages/settings/SecuritySettingsPage')),
+  CrmDashboard: lazyPage(() => import('@/pages/crm/CrmDashboardPage')),
   Companies: lazyPage(() => import('@/pages/crm/CompaniesPage')),
   Contacts: lazyPage(() => import('@/pages/crm/ContactsPage')),
   Leads: lazyPage(() => import('@/pages/crm/LeadsPage')),

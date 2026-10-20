@@ -2,7 +2,16 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Calendar, FileText, PhoneCall, Plus, Zap } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Button, SearchInput, Select, Spinner, toast, type SelectOption } from '@/components/ui'
+import {
+  Button,
+  Pagination,
+  SearchInput,
+  Select,
+  Spinner,
+  toast,
+  usePagination,
+  type SelectOption,
+} from '@/components/ui'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
@@ -68,6 +77,16 @@ export default function ActivitiesPage() {
     )
   }, [activities, search])
 
+  const {
+    paginatedItems: paginatedActivities,
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    totalPages,
+    totalItems,
+  } = usePagination({ items: filteredActivities, initialPageSize: 10 })
+
   const handleSaveActivity = async (payload: CreateActivityPayload) => {
     if (!slug) return
     try {
@@ -81,9 +100,11 @@ export default function ActivitiesPage() {
 
   const handleDeleteActivity = async (activityId: string) => {
     if (!slug) return
+    const targetId = activityId || (activityId as any)?._id
+    if (!targetId || targetId === 'undefined') return
     if (!window.confirm('Are you sure you want to delete this activity?')) return
     try {
-      await crmService.deleteActivity(slug, activityId)
+      await crmService.deleteActivity(slug, targetId)
       toast.success('Activity deleted successfully')
       await loadData()
     } catch {
@@ -97,7 +118,7 @@ export default function ActivitiesPage() {
         title="Sales Activities"
         description="Logs and follow-ups for cold calls, discovery meetings, and submitted proposals."
         actions={
-          <Button size="sm" onClick={() => setModalOpen(true)}>
+          <Button size="sm" onClick={() => setModalOpen(true)} className="cursor-pointer">
             <Plus className="size-4 mr-1.5" />
             Log Activity
           </Button>
@@ -176,18 +197,30 @@ export default function ActivitiesPage() {
               : 'Log cold calls, discovery meetings, and submitted proposals to build your activity history.'
           }
           action={
-            <Button size="sm" onClick={() => setModalOpen(true)}>
+            <Button size="sm" onClick={() => setModalOpen(true)} className="cursor-pointer">
               <Plus className="size-4 mr-1.5" />
               Log Activity
             </Button>
           }
         />
       ) : (
-        <ActivityTimeline
-          activities={filteredActivities}
-          companies={companies}
-          onDelete={handleDeleteActivity}
-        />
+        <div className="space-y-4">
+          <ActivityTimeline
+            activities={paginatedActivities}
+            companies={companies}
+            onDelete={handleDeleteActivity}
+          />
+          <div className="rounded-md border border-slate-200 bg-white px-4 py-3">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+            />
+          </div>
+        </div>
       )}
 
       <LogActivityModal

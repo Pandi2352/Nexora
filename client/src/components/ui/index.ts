@@ -22,5 +22,6 @@ export { Toaster } from './Toaster'
 export { toast, type ToastType } from './toast-service'
 export { CountrySelect, type CountrySelectProps } from './CountrySelect'
 export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog'
+export { DatePicker, type DatePickerProps } from './DatePicker'
 export { Pagination, usePagination, type PaginationProps, type UsePaginationOptions, type UsePaginationReturn } from './pagination'
 

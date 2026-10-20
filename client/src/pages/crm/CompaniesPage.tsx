@@ -14,65 +14,10 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
 import type { Company, CreateCompanyPayload } from '@/types/crm'
-import { MOCK_COMPANIES } from '@/data/mock-companies'
 import { CompanyModal } from '@/components/crm/companies/CompanyModal'
 import { CompanyTable } from '@/components/crm/companies/CompanyTable'
 import { CompanyFilterBar } from '@/components/crm/companies/CompanyFilterBar'
 import { CompanyStatsStrip } from '@/components/crm/companies/CompanyStatsStrip'
-
-const getDeletedCompanyIds = (slug: string): Set<string> => {
-  try {
-    const raw = localStorage.getItem(`nexora_crm_deleted_companies_${slug}`)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed)) return new Set(parsed)
-    }
-  } catch {
-    // Ignore storage parse error
-  }
-  return new Set()
-}
-
-const addDeletedCompanyId = (slug: string, id: string) => {
-  try {
-    const set = getDeletedCompanyIds(slug)
-    set.add(id)
-    localStorage.setItem(
-      `nexora_crm_deleted_companies_${slug}`,
-      JSON.stringify(Array.from(set)),
-    )
-  } catch {
-    // Ignore storage write error
-  }
-}
-
-const getStoredCompanies = (slug: string): Company[] => {
-  const deleted = getDeletedCompanyIds(slug)
-  try {
-    const raw = localStorage.getItem(`nexora_crm_companies_${slug}`)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed)) {
-        return parsed.filter(
-          (c) => !deleted.has(c.id) && !deleted.has((c as any)._id),
-        )
-      }
-    }
-  } catch {
-    // Ignore storage parse error
-  }
-  return MOCK_COMPANIES.filter(
-    (c) => !deleted.has(c.id) && !deleted.has((c as any)._id),
-  )
-}
-
-const saveStoredCompanies = (slug: string, list: Company[]) => {
-  try {
-    localStorage.setItem(`nexora_crm_companies_${slug}`, JSON.stringify(list))
-  } catch {
-    // Ignore storage write error
-  }
-}
 
 export default function CompaniesPage() {
   useDocumentTitle('Companies')
@@ -89,56 +34,27 @@ export default function CompaniesPage() {
   const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const loadCompanies = useCallback(async (isBackground = false) => {
-    if (!slug) return
-    if (!isBackground && companies.length === 0) {
-      setIsLoading(true)
-    } else {
-      setIsRefreshing(true)
-    }
-
-    const deletedIds = getDeletedCompanyIds(slug)
-    let current = getStoredCompanies(slug)
-
-    try {
-      const serverData = await crmService.listCompanies(slug, search)
-      if (serverData && Array.isArray(serverData)) {
-        const filteredServer = serverData.filter(
-          (c) => !deletedIds.has(c.id) && !deletedIds.has((c as any)._id),
-        )
-        const serverIds = new Set(
-          filteredServer.map((c) => c.id || (c as any)._id),
-        )
-        const remaining = current.filter(
-          (c) =>
-            !serverIds.has(c.id) &&
-            !serverIds.has((c as any)._id) &&
-            !deletedIds.has(c.id) &&
-            !deletedIds.has((c as any)._id),
-        )
-        current = [...filteredServer, ...remaining]
-        saveStoredCompanies(slug, current)
+  const loadCompanies = useCallback(
+    async (isBackground = false) => {
+      if (!slug) return
+      if (!isBackground && companies.length === 0) {
+        setIsLoading(true)
+      } else {
+        setIsRefreshing(true)
       }
-    } catch {
-      // Retain local store
-    }
 
-    if (search && search.trim()) {
-      const q = search.trim().toLowerCase()
-      setCompanies(
-        current.filter(
-          (c) =>
-            c.name.toLowerCase().includes(q) ||
-            (c.email && c.email.toLowerCase().includes(q)) ||
-            (c.industry && c.industry.toLowerCase().includes(q)),
-        ),
-      )
-    } else {
-      setCompanies(current)
-    }
-    setIsLoading(false)
-    setIsRefreshing(false)
-  }, [slug, search, companies.length])
+      try {
+        const serverData = await crmService.listCompanies(slug, search)
+        setCompanies(Array.isArray(serverData) ? serverData : [])
+      } catch {
+        toast.error('Failed to load companies from server')
+      } finally {
+        setIsLoading(false)
+        setIsRefreshing(false)
+      }
+    },
+    [slug, search, companies.length],
+  )
 
   useEffect(() => {
     void loadCompanies()
@@ -149,25 +65,15 @@ export default function CompaniesPage() {
     try {
       if (editingCompany) {
         const targetId = editingCompany.id || (editingCompany as any)._id
-        const updated = await crmService.updateCompany(slug, targetId, payload)
-        const stored = getStoredCompanies(slug).map((c) =>
-          c.id === targetId || (c as any)._id === targetId ? { ...c, ...updated } : c,
-        )
-        saveStoredCompanies(slug, stored)
-        setCompanies((prev) =>
-          prev.map((c) =>
-            c.id === targetId || (c as any)._id === targetId ? { ...c, ...updated } : c,
-          ),
-        )
+        await crmService.updateCompany(slug, targetId, payload)
         toast.success('Company updated successfully')
       } else {
-        const created = await crmService.createCompany(slug, payload)
-        const stored = [created, ...getStoredCompanies(slug)]
-        saveStoredCompanies(slug, stored)
-        setCompanies((prev) => [created, ...prev])
+        await crmService.createCompany(slug, payload)
         toast.success('Company created successfully')
       }
-      await loadCompanies()
+      setModalOpen(false)
+      setEditingCompany(null)
+      await loadCompanies(true)
     } catch {
       toast.error('Failed to save company')
     }
@@ -183,23 +89,13 @@ export default function CompaniesPage() {
 
     setIsDeleting(true)
     try {
-      try {
-        await crmService.deleteCompany(slug, targetId)
-      } catch (err) {
-        console.warn('Backend delete notification (local mock or removed):', err)
-      }
-
-      addDeletedCompanyId(slug, targetId)
-      const stored = getStoredCompanies(slug).filter(
-        (c) => c.id !== targetId && (c as any)._id !== targetId,
-      )
-      saveStoredCompanies(slug, stored)
+      await crmService.deleteCompany(slug, targetId)
       setCompanies((prev) =>
         prev.filter((c) => c.id !== targetId && (c as any)._id !== targetId),
       )
-
       toast.success(`Deleted ${companyToDelete.name}`)
       setCompanyToDelete(null)
+      await loadCompanies(true)
     } catch {
       toast.error('Failed to delete company')
     } finally {
@@ -278,8 +174,8 @@ export default function CompaniesPage() {
           title={search ? 'No matching companies found' : 'No companies added yet'}
           description={
             search
-              ? 'Try modifying your search or filter criteria.'
-              : 'Add your first enterprise account or business customer to track revenue and deals.'
+              ? 'Try modifying your search query or reset your filters.'
+              : 'Add your first prospective or customer company to get started.'
           }
           action={
             <Button
@@ -298,13 +194,13 @@ export default function CompaniesPage() {
         <div className="rounded-md border border-slate-200 bg-white overflow-hidden">
           <CompanyTable
             companies={paginatedCompanies}
-            onEdit={(comp) => {
-              setEditingCompany(comp)
+            onEdit={(company) => {
+              setEditingCompany(company)
               setModalOpen(true)
             }}
-            onDelete={(comp) => setCompanyToDelete(comp)}
+            onDelete={(company) => setCompanyToDelete(company)}
           />
-          <div className="border-t border-b border-slate-200 bg-slate-50/50 px-4 py-3">
+          <div className="border-t border-slate-200 bg-slate-50/50 px-4 py-3">
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

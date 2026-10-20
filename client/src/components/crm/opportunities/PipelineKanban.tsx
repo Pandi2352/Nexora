@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Opportunity, OpportunityStage } from '@/types/crm'
 import { OpportunityCard } from './OpportunityCard'
 import { formatINR } from '../crm-formatters'
@@ -24,16 +25,49 @@ export function PipelineKanban({
   onMoveStage,
   onDelete,
 }: PipelineKanbanProps) {
+  const [dragOverStage, setDragOverStage] = useState<OpportunityStage | null>(null)
+
+  const handleDragOver = (e: React.DragEvent, stageKey: OpportunityStage) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (dragOverStage !== stageKey) {
+      setDragOverStage(stageKey)
+    }
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDragOverStage(null)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent, stageKey: OpportunityStage) => {
+    e.preventDefault()
+    setDragOverStage(null)
+    const oppId = e.dataTransfer.getData('text/plain')
+    if (oppId) {
+      onMoveStage(oppId, stageKey)
+    }
+  }
+
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
+    <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
       {STAGES.map((stage) => {
         const stageOpps = opportunities.filter((o) => o.stage === stage.key)
         const stageValue = stageOpps.reduce((sum, o) => sum + (o.value || 0), 0)
+        const isColumnActive = dragOverStage === stage.key
 
         return (
           <div
             key={stage.key}
-            className="flex flex-col w-72 shrink-0 rounded-md border border-slate-200 bg-slate-50/60 p-3"
+            onDragOver={(e) => handleDragOver(e, stage.key)}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, stage.key)}
+            className={`flex flex-col w-72 shrink-0 rounded-md border p-3 transition-colors duration-150 ${
+              isColumnActive
+                ? 'border-brand-500 bg-brand-50/40 ring-2 ring-brand-500/20'
+                : 'border-slate-200 bg-slate-50/60'
+            }`}
           >
             {/* Column Header */}
             <div className="mb-3 space-y-1">
@@ -51,16 +85,22 @@ export function PipelineKanban({
               </p>
             </div>
 
-            {/* Column Content */}
+            {/* Column Content & Drop Zone */}
             <div className="space-y-2.5 min-h-[160px] flex-1 overflow-y-auto">
-              {stageOpps.length === 0 ? (
+              {isColumnActive && (
+                <div className="flex h-12 items-center justify-center rounded-md border-2 border-dashed border-brand-400 bg-brand-50/80 text-xs font-semibold text-brand-700 animate-pulse">
+                  Drop deal here → {stage.label}
+                </div>
+              )}
+
+              {stageOpps.length === 0 && !isColumnActive ? (
                 <div className="flex h-24 items-center justify-center rounded-md border border-dashed border-slate-200 text-xs text-slate-400">
                   No deals
                 </div>
               ) : (
                 stageOpps.map((opp) => (
                   <OpportunityCard
-                    key={opp.id}
+                    key={opp.id || (opp as any)._id}
                     opportunity={opp}
                     stages={STAGES}
                     onEdit={onEdit}

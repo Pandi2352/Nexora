@@ -117,14 +117,19 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/contacts`,
       { params },
     )
-    return res.data
+    const list = res.data || []
+    return list.map((c: any) => ({
+      ...c,
+      id: c.id || c._id,
+    }))
   },
 
   async getContact(orgSlug: string, id: string): Promise<Contact> {
     const res = await apiClient.get<ApiResponseWrapper<Contact>>(
       `/organizations/${orgSlug}/crm/contacts/${id}`,
     )
-    return res.data
+    const c = res.data as any
+    return { ...c, id: c.id || c._id }
   },
 
   async createContact(orgSlug: string, payload: CreateContactPayload): Promise<Contact> {
@@ -132,7 +137,8 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/contacts`,
       payload,
     )
-    return res.data
+    const c = res.data as any
+    return { ...c, id: c.id || c._id }
   },
 
   async updateContact(orgSlug: string, id: string, payload: UpdateContactPayload): Promise<Contact> {
@@ -140,7 +146,8 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/contacts/${id}`,
       payload,
     )
-    return res.data
+    const c = res.data as any
+    return { ...c, id: c.id || c._id }
   },
 
   async deleteContact(orgSlug: string, id: string): Promise<void> {
@@ -225,7 +232,11 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/activities`,
       { params: options },
     )
-    return res.data
+    const list = res.data || []
+    return list.map((a: any) => ({
+      ...a,
+      id: a.id || a._id,
+    }))
   },
 
   async logActivity(orgSlug: string, payload: CreateActivityPayload): Promise<SalesActivity> {
@@ -233,7 +244,8 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/activities`,
       payload,
     )
-    return res.data
+    const a = res.data as any
+    return { ...a, id: a.id || a._id }
   },
 
   async updateActivity(
@@ -245,7 +257,8 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/activities/${id}`,
       payload,
     )
-    return res.data
+    const a = res.data as any
+    return { ...a, id: a.id || a._id }
   },
 
   async deleteActivity(orgSlug: string, id: string): Promise<void> {
@@ -258,7 +271,11 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/opportunities`,
       { params: options },
     )
-    return res.data
+    const list = res.data || []
+    return list.map((o: any) => ({
+      ...o,
+      id: o.id || o._id,
+    }))
   },
 
   async getPipelineSummary(orgSlug: string): Promise<PipelineSummary[]> {
@@ -272,7 +289,8 @@ export const crmService = {
     const res = await apiClient.get<ApiResponseWrapper<Opportunity>>(
       `/organizations/${orgSlug}/crm/opportunities/${id}`,
     )
-    return res.data
+    const o = res.data as any
+    return { ...o, id: o.id || o._id }
   },
 
   async createOpportunity(orgSlug: string, payload: CreateOpportunityPayload): Promise<Opportunity> {
@@ -280,7 +298,8 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/opportunities`,
       payload,
     )
-    return res.data
+    const o = res.data as any
+    return { ...o, id: o.id || o._id }
   },
 
   async updateOpportunity(
@@ -292,7 +311,8 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/opportunities/${id}`,
       payload,
     )
-    return res.data
+    const o = res.data as any
+    return { ...o, id: o.id || o._id }
   },
 
   async updateOpportunityStage(
@@ -304,7 +324,8 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/opportunities/${id}/stage`,
       { stage },
     )
-    return res.data
+    const o = res.data as any
+    return { ...o, id: o.id || o._id }
   },
 
   async deleteOpportunity(orgSlug: string, id: string): Promise<void> {

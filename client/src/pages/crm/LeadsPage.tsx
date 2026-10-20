@@ -17,62 +17,11 @@ import { crmService } from '@/services/crm.service'
 import { memberService } from '@/services/member.service'
 import type { BusinessUnitItem, CreateLeadPayload, Lead } from '@/types/crm'
 import type { WorkspaceMember } from '@/types/member'
-import { MOCK_LEADS } from '@/data/mock-leads'
 import { LeadConvertModal } from '@/components/crm/leads/LeadConvertModal'
 import { LeadTable } from '@/components/crm/leads/LeadTable'
 import { LeadStatsStrip } from '@/components/crm/leads/LeadStatsStrip'
 import { LeadFilterBar, type LeadStatusCounts } from '@/components/crm/leads/LeadFilterBar'
 import { LeadFormPage } from '@/components/crm/leads/LeadFormPage'
-
-const getDeletedLeadIds = (slug: string): Set<string> => {
-  try {
-    const raw = localStorage.getItem(`nexora_crm_deleted_leads_${slug}`)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed)) return new Set(parsed)
-    }
-  } catch {
-    // Ignore parse error
-  }
-  return new Set()
-}
-
-const addDeletedLeadId = (slug: string, id: string) => {
-  try {
-    const set = getDeletedLeadIds(slug)
-    set.add(id)
-    localStorage.setItem(
-      `nexora_crm_deleted_leads_${slug}`,
-      JSON.stringify(Array.from(set)),
-    )
-  } catch {
-    // Ignore write error
-  }
-}
-
-const getStoredLeads = (slug: string): Lead[] => {
-  const deleted = getDeletedLeadIds(slug)
-  try {
-    const raw = localStorage.getItem(`nexora_crm_leads_${slug}`)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed)) {
-        return parsed.filter((l) => !deleted.has(l.id) && !deleted.has((l as any)._id))
-      }
-    }
-  } catch {
-    // Ignore parse error
-  }
-  return MOCK_LEADS.filter((l) => !deleted.has(l.id) && !deleted.has((l as any)._id))
-}
-
-const saveStoredLeads = (slug: string, list: Lead[]) => {
-  try {
-    localStorage.setItem(`nexora_crm_leads_${slug}`, JSON.stringify(list))
-  } catch {
-    // Ignore write error
-  }
-}
 
 export default function LeadsPage() {
   useDocumentTitle('Leads')
@@ -102,62 +51,26 @@ export default function LeadsPage() {
         setIsRefreshing(true)
       }
 
-      const deletedIds = getDeletedLeadIds(slug)
-      let current = getStoredLeads(slug)
-
       try {
         const [leadsData, membersData, buData] = await Promise.allSettled([
-          crmService.listLeads(slug),
+          crmService.listLeads(slug, {
+            search: search || undefined,
+          }),
           memberService.listMembers(slug),
-          crmService.listBusinessUnits(slug),
+          crmService.listBusinessUnits(slug, true),
         ])
 
         if (leadsData.status === 'fulfilled' && Array.isArray(leadsData.value)) {
-          const filteredServer = leadsData.value.filter(
-            (l) => !deletedIds.has(l.id) && !deletedIds.has((l as any)._id),
-          )
-          const serverIds = new Set(filteredServer.map((l) => l.id || (l as any)._id))
-          const remaining = current.filter(
-            (l) =>
-              !serverIds.has(l.id) &&
-              !serverIds.has((l as any)._id) &&
-              !deletedIds.has(l.id) &&
-              !deletedIds.has((l as any)._id),
-          )
-          current = [...filteredServer, ...remaining]
-          saveStoredLeads(slug, current)
+          setLeads(leadsData.value)
         }
         if (membersData.status === 'fulfilled') setMembers(membersData.value || [])
         if (buData.status === 'fulfilled') setBusinessUnits(buData.value || [])
       } catch {
-        // Fallback to local store
+        toast.error('Failed to load leads from server')
+      } finally {
+        setIsLoading(false)
+        setIsRefreshing(false)
       }
-
-      if (search && search.trim()) {
-        const q = search.trim().toLowerCase()
-        setLeads(
-          current.filter(
-            (l) =>
-              l.companyName.toLowerCase().includes(q) ||
-              l.contactFirstName.toLowerCase().includes(q) ||
-              l.contactLastName.toLowerCase().includes(q) ||
-              l.contactEmail.toLowerCase().includes(q) ||
-              l.businessUnit.toLowerCase().includes(q) ||
-              (l.contacts &&
-                l.contacts.some(
-                  (c) =>
-                    c.firstName.toLowerCase().includes(q) ||
-                    c.lastName.toLowerCase().includes(q) ||
-                    c.email.toLowerCase().includes(q),
-                )),
-          ),
-        )
-      } else {
-        setLeads(current)
-      }
-
-      setIsLoading(false)
-      setIsRefreshing(false)
     },
     [slug, search, leads.length],
   )
@@ -210,22 +123,10 @@ export default function LeadsPage() {
     try {
       if (editingLead) {
         const targetId = editingLead.id || (editingLead as any)._id
-        const updated = await crmService.updateLead(slug, targetId, payload)
-        const stored = getStoredLeads(slug).map((l) =>
-          l.id === targetId || (l as any)._id === targetId ? { ...l, ...updated } : l,
-        )
-        saveStoredLeads(slug, stored)
-        setLeads((prev) =>
-          prev.map((l) =>
-            l.id === targetId || (l as any)._id === targetId ? { ...l, ...updated } : l,
-          ),
-        )
+        await crmService.updateLead(slug, targetId, payload)
         toast.success('Lead updated successfully')
       } else {
-        const created = await crmService.createLead(slug, payload)
-        const stored = [created, ...getStoredLeads(slug)]
-        saveStoredLeads(slug, stored)
-        setLeads((prev) => [created, ...prev])
+        await crmService.createLead(slug, payload)
         toast.success('Lead created successfully')
       }
       setViewMode('list')
@@ -239,23 +140,22 @@ export default function LeadsPage() {
   const handleConfirmDelete = async () => {
     if (!leadToDelete || !slug) return
     const targetId = leadToDelete.id || (leadToDelete as any)._id
+    if (!targetId) {
+      toast.error('Invalid lead ID')
+      return
+    }
+
     setIsDeleting(true)
     try {
-      addDeletedLeadId(slug, targetId)
-      try {
-        await crmService.deleteLead(slug, targetId)
-      } catch {
-        // Retain local deletion
-      }
-      const updated = getStoredLeads(slug).filter(
-        (l) => l.id !== targetId && (l as any)._id !== targetId,
-      )
-      saveStoredLeads(slug, updated)
+      await crmService.deleteLead(slug, targetId)
       setLeads((prev) =>
         prev.filter((l) => l.id !== targetId && (l as any)._id !== targetId),
       )
       toast.success('Lead removed successfully')
       setLeadToDelete(null)
+      await loadData(true)
+    } catch {
+      toast.error('Failed to delete lead')
     } finally {
       setIsDeleting(false)
     }
@@ -282,7 +182,7 @@ export default function LeadsPage() {
     totalItems,
   } = usePagination({ items: filteredLeads, initialPageSize: 10 })
 
-  // When creating or editing, render LeadFormPage directly on the page (NO MODAL)
+  // Render on-page LeadFormPage (no popup modal)
   if (viewMode === 'form') {
     return (
       <LeadFormPage

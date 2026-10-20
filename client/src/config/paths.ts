@@ -6,6 +6,7 @@ export const workspaceSegments = {
   myWork: 'my-work',
   inbox: 'inbox',
   calendar: 'calendar',
+  crmDashboard: 'crm/dashboard',
   crmCompanies: 'crm/companies',
   crmContacts: 'crm/contacts',
   crmLeads: 'crm/leads',

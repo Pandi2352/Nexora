@@ -14,65 +14,10 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
 import type { BusinessUnitItem, CreateBusinessUnitPayload } from '@/types/crm'
-import { MOCK_BUSINESS_UNITS } from '@/data/mock-business-units'
 import { BusinessUnitModal } from '@/components/crm/business-units/BusinessUnitModal'
 import { BusinessUnitTable } from '@/components/crm/business-units/BusinessUnitTable'
 import { BusinessUnitFilterBar } from '@/components/crm/business-units/BusinessUnitFilterBar'
 import { BusinessUnitStatsStrip } from '@/components/crm/business-units/BusinessUnitStatsStrip'
-
-const getDeletedBusinessUnitIds = (slug: string): Set<string> => {
-  try {
-    const raw = localStorage.getItem(`nexora_crm_deleted_bus_${slug}`)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed)) return new Set(parsed)
-    }
-  } catch {
-    // Ignore storage parse error
-  }
-  return new Set()
-}
-
-const addDeletedBusinessUnitId = (slug: string, id: string) => {
-  try {
-    const set = getDeletedBusinessUnitIds(slug)
-    set.add(id)
-    localStorage.setItem(
-      `nexora_crm_deleted_bus_${slug}`,
-      JSON.stringify(Array.from(set)),
-    )
-  } catch {
-    // Ignore storage write error
-  }
-}
-
-const getStoredBusinessUnits = (slug: string): BusinessUnitItem[] => {
-  const deleted = getDeletedBusinessUnitIds(slug)
-  try {
-    const raw = localStorage.getItem(`nexora_crm_bus_${slug}`)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed)) {
-        return parsed.filter(
-          (u) => !deleted.has(u.id) && !deleted.has((u as any)._id),
-        )
-      }
-    }
-  } catch {
-    // Ignore storage parse error
-  }
-  return MOCK_BUSINESS_UNITS.filter(
-    (u) => !deleted.has(u.id) && !deleted.has((u as any)._id),
-  )
-}
-
-const saveStoredBusinessUnits = (slug: string, list: BusinessUnitItem[]) => {
-  try {
-    localStorage.setItem(`nexora_crm_bus_${slug}`, JSON.stringify(list))
-  } catch {
-    // Ignore storage write error
-  }
-}
 
 export default function BusinessUnitsPage() {
   useDocumentTitle('Business Units')
@@ -88,55 +33,37 @@ export default function BusinessUnitsPage() {
   const [unitToDelete, setUnitToDelete] = useState<BusinessUnitItem | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const loadUnits = useCallback(async (isBackground = false) => {
-    if (!slug) return
-    if (!isBackground && units.length === 0) {
-      setIsLoading(true)
-    } else {
-      setIsRefreshing(true)
-    }
-    const deletedIds = getDeletedBusinessUnitIds(slug)
-    let current = getStoredBusinessUnits(slug)
-
-    try {
-      const serverData = await crmService.listBusinessUnits(slug, true)
-      if (serverData && Array.isArray(serverData)) {
-        const filteredServer = serverData.filter(
-          (u) => !deletedIds.has(u.id) && !deletedIds.has((u as any)._id),
-        )
-        const serverIds = new Set(
-          filteredServer.map((u) => u.id || (u as any)._id),
-        )
-        const remaining = current.filter(
-          (u) =>
-            !serverIds.has(u.id) &&
-            !serverIds.has((u as any)._id) &&
-            !deletedIds.has(u.id) &&
-            !deletedIds.has((u as any)._id),
-        )
-        current = [...filteredServer, ...remaining]
-        saveStoredBusinessUnits(slug, current)
+  const loadUnits = useCallback(
+    async (isBackground = false) => {
+      if (!slug) return
+      if (!isBackground && units.length === 0) {
+        setIsLoading(true)
+      } else {
+        setIsRefreshing(true)
       }
-    } catch {
-      // Retain local store
-    }
 
-    if (search && search.trim()) {
-      const q = search.trim().toLowerCase()
-      setUnits(
-        current.filter(
-          (u) =>
-            u.name.toLowerCase().includes(q) ||
-            u.code.toLowerCase().includes(q) ||
-            (u.description && u.description.toLowerCase().includes(q)),
-        ),
-      )
-    } else {
-      setUnits(current)
-    }
-    setIsLoading(false)
-    setIsRefreshing(false)
-  }, [slug, search, units.length])
+      try {
+        const serverData = await crmService.listBusinessUnits(slug, true)
+        let list = Array.isArray(serverData) ? serverData : []
+        if (search && search.trim()) {
+          const q = search.trim().toLowerCase()
+          list = list.filter(
+            (u) =>
+              u.name.toLowerCase().includes(q) ||
+              u.code.toLowerCase().includes(q) ||
+              (u.description && u.description.toLowerCase().includes(q)),
+          )
+        }
+        setUnits(list)
+      } catch {
+        toast.error('Failed to load business units from server')
+      } finally {
+        setIsLoading(false)
+        setIsRefreshing(false)
+      }
+    },
+    [slug, search, units.length],
+  )
 
   useEffect(() => {
     void loadUnits()
@@ -147,25 +74,15 @@ export default function BusinessUnitsPage() {
     try {
       if (editingUnit) {
         const targetId = editingUnit.id || (editingUnit as any)._id
-        const updated = await crmService.updateBusinessUnit(slug, targetId, payload)
-        const stored = getStoredBusinessUnits(slug).map((u) =>
-          u.id === targetId || (u as any)._id === targetId ? { ...u, ...updated } : u,
-        )
-        saveStoredBusinessUnits(slug, stored)
-        setUnits((prev) =>
-          prev.map((u) =>
-            u.id === targetId || (u as any)._id === targetId ? { ...u, ...updated } : u,
-          ),
-        )
+        await crmService.updateBusinessUnit(slug, targetId, payload)
         toast.success('Business unit updated successfully')
       } else {
-        const created = await crmService.createBusinessUnit(slug, payload)
-        const stored = [created, ...getStoredBusinessUnits(slug)]
-        saveStoredBusinessUnits(slug, stored)
-        setUnits((prev) => [created, ...prev])
+        await crmService.createBusinessUnit(slug, payload)
         toast.success('Business unit created successfully')
       }
-      await loadUnits()
+      setModalOpen(false)
+      setEditingUnit(null)
+      await loadUnits(true)
     } catch {
       toast.error('Failed to save business unit')
     }
@@ -181,23 +98,13 @@ export default function BusinessUnitsPage() {
 
     setIsDeleting(true)
     try {
-      try {
-        await crmService.deleteBusinessUnit(slug, targetId)
-      } catch (err) {
-        console.warn('Backend delete notification (local mock or removed):', err)
-      }
-
-      addDeletedBusinessUnitId(slug, targetId)
-      const stored = getStoredBusinessUnits(slug).filter(
-        (u) => u.id !== targetId && (u as any)._id !== targetId,
-      )
-      saveStoredBusinessUnits(slug, stored)
+      await crmService.deleteBusinessUnit(slug, targetId)
       setUnits((prev) =>
         prev.filter((u) => u.id !== targetId && (u as any)._id !== targetId),
       )
-
       toast.success(`Deleted ${unitToDelete.name}`)
       setUnitToDelete(null)
+      await loadUnits(true)
     } catch {
       toast.error('Failed to delete business unit')
     } finally {
@@ -237,7 +144,7 @@ export default function BusinessUnitsPage() {
     <div className="space-y-5">
       <PageHeader
         title="Business Units"
-        description="Master directory of operating divisions used for lead funnel assignment and sales routing."
+        description="Organize operational divisions, service lines, and lead routing categories."
         actions={
           <Button
             variant="primary"

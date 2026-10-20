@@ -95,12 +95,19 @@ export default function OpportunitiesPage() {
 
   const handleMoveStage = async (oppId: string, nextStage: OpportunityStage) => {
     if (!slug) return
+    const targetId = oppId || (oppId as any)?._id
+    if (!targetId || targetId === 'undefined') {
+      toast.error('Invalid deal ID')
+      return
+    }
     // Optimistic update
     setOpportunities((prev) =>
-      prev.map((o) => (o.id === oppId ? { ...o, stage: nextStage } : o)),
+      prev.map((o) =>
+        o.id === targetId || (o as any)._id === targetId ? { ...o, stage: nextStage } : o,
+      ),
     )
     try {
-      await crmService.updateOpportunity(slug, oppId, { stage: nextStage })
+      await crmService.updateOpportunityStage(slug, targetId, nextStage)
       toast.info('Deal stage updated')
       await loadData()
     } catch {
@@ -111,9 +118,11 @@ export default function OpportunitiesPage() {
 
   const handleDeleteOpp = async (oppId: string) => {
     if (!slug) return
+    const targetId = oppId || (oppId as any)?._id
+    if (!targetId || targetId === 'undefined') return
     if (!window.confirm('Are you sure you want to delete this opportunity?')) return
     try {
-      await crmService.deleteOpportunity(slug, oppId)
+      await crmService.deleteOpportunity(slug, targetId)
       toast.success('Opportunity deleted successfully')
       await loadData()
     } catch {
