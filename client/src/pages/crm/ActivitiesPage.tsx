@@ -39,6 +39,7 @@ export default function ActivitiesPage() {
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [companyFilter, setCompanyFilter] = useState<string>('all')
   const [modalOpen, setModalOpen] = useState(false)
+  const [editingActivity, setEditingActivity] = useState<SalesActivity | null>(null)
 
   const loadData = useCallback(async () => {
     if (!slug) return
@@ -90,11 +91,19 @@ export default function ActivitiesPage() {
   const handleSaveActivity = async (payload: CreateActivityPayload) => {
     if (!slug) return
     try {
-      await crmService.logActivity(slug, payload)
-      toast.success('Activity logged successfully')
+      if (editingActivity) {
+        const targetId = editingActivity.id || (editingActivity as any)?._id
+        await crmService.updateActivity(slug, targetId, payload)
+        toast.success('Activity updated successfully')
+      } else {
+        await crmService.logActivity(slug, payload)
+        toast.success('Activity logged successfully')
+      }
+      setModalOpen(false)
+      setEditingActivity(null)
       await loadData()
     } catch {
-      toast.error('Failed to log activity')
+      toast.error(editingActivity ? 'Failed to update activity' : 'Failed to log activity')
     }
   }
 
@@ -118,7 +127,14 @@ export default function ActivitiesPage() {
         title="Sales Activities"
         description="Logs and follow-ups for cold calls, discovery meetings, and submitted proposals."
         actions={
-          <Button size="sm" onClick={() => setModalOpen(true)} className="cursor-pointer">
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditingActivity(null)
+              setModalOpen(true)
+            }}
+            className="cursor-pointer"
+          >
             <Plus className="size-4 mr-1.5" />
             Log Activity
           </Button>
@@ -208,6 +224,10 @@ export default function ActivitiesPage() {
           <ActivityTimeline
             activities={paginatedActivities}
             companies={companies}
+            onEdit={(act) => {
+              setEditingActivity(act)
+              setModalOpen(true)
+            }}
             onDelete={handleDeleteActivity}
           />
           <div className="rounded-md border border-slate-200 bg-white px-4 py-3">
@@ -225,9 +245,13 @@ export default function ActivitiesPage() {
 
       <LogActivityModal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => {
+          setModalOpen(false)
+          setEditingActivity(null)
+        }}
         onSave={handleSaveActivity}
         companyOptions={companyOptions}
+        activity={editingActivity}
       />
     </div>
   )

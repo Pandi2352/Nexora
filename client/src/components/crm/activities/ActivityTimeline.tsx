@@ -1,4 +1,4 @@
-import { Building2, Calendar, Trash2 } from 'lucide-react'
+import { Building2, Calendar, Pencil, Trash2 } from 'lucide-react'
 import { Tooltip } from '@/components/ui'
 import type { Company, SalesActivity } from '@/types/crm'
 import { ActivityOutcomeBadge, ActivityTypeBadge } from './ActivityTypeBadge'
@@ -7,12 +7,14 @@ import { formatDateSafe, formatINR } from '../crm-formatters'
 interface ActivityTimelineProps {
   activities: SalesActivity[]
   companies: Company[]
+  onEdit?: (activity: SalesActivity) => void
   onDelete?: (activityId: string) => void
 }
 
 export function ActivityTimeline({
   activities,
   companies,
+  onEdit,
   onDelete,
 }: ActivityTimelineProps) {
   const companyMap = new Map(companies.map((c) => [c.id, c.name]))
@@ -61,18 +63,32 @@ export function ActivityTimeline({
                 {formatDateSafe(dateStr)}
               </span>
 
-              {onDelete && (
-                <Tooltip content="Delete Activity">
-                  <button
-                    type="button"
-                    onClick={() => onDelete(act.id || (act as any)._id)}
-                    className="size-7 flex items-center justify-center rounded-md border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 transition-colors cursor-pointer"
-                    aria-label="Delete activity"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </button>
-                </Tooltip>
-              )}
+              <div className="flex items-center gap-1">
+                {onEdit && (
+                  <Tooltip content="Edit Activity">
+                    <button
+                      type="button"
+                      onClick={() => onEdit(act)}
+                      className="size-7 flex items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-brand-600 hover:border-brand-200 transition-colors cursor-pointer"
+                      aria-label="Edit activity"
+                    >
+                      <Pencil className="size-3.5" />
+                    </button>
+                  </Tooltip>
+                )}
+                {onDelete && (
+                  <Tooltip content="Delete Activity">
+                    <button
+                      type="button"
+                      onClick={() => onDelete(act.id || (act as any)._id)}
+                      className="size-7 flex items-center justify-center rounded-md border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 transition-colors cursor-pointer"
+                      aria-label="Delete activity"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </Tooltip>
+                )}
+              </div>
             </div>
           </div>
         )

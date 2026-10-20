@@ -16,6 +16,7 @@ import { crmService } from '@/services/crm.service'
 import type { Company, CreateCompanyPayload } from '@/types/crm'
 import { CompanyModal } from '@/components/crm/companies/CompanyModal'
 import { CompanyTable } from '@/components/crm/companies/CompanyTable'
+import { CompanyDetailDrawer } from '@/components/crm/companies/CompanyDetailDrawer'
 import { CompanyFilterBar } from '@/components/crm/companies/CompanyFilterBar'
 import { CompanyStatsStrip } from '@/components/crm/companies/CompanyStatsStrip'
 
@@ -31,6 +32,7 @@ export default function CompaniesPage() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [modalOpen, setModalOpen] = useState(false)
   const [editingCompany, setEditingCompany] = useState<Company | null>(null)
+  const [detailCompany, setDetailCompany] = useState<Company | null>(null)
   const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -194,6 +196,7 @@ export default function CompaniesPage() {
         <div className="rounded-md border border-slate-200 bg-white overflow-hidden">
           <CompanyTable
             companies={paginatedCompanies}
+            onViewDetail={(company) => setDetailCompany(company)}
             onEdit={(company) => {
               setEditingCompany(company)
               setModalOpen(true)
@@ -212,6 +215,19 @@ export default function CompaniesPage() {
           </div>
         </div>
       )}
+
+      {/* 360 Account Detail Drawer */}
+      <CompanyDetailDrawer
+        isOpen={!!detailCompany}
+        company={detailCompany}
+        slug={slug || ''}
+        onClose={() => setDetailCompany(null)}
+        onEdit={(company) => {
+          setDetailCompany(null)
+          setEditingCompany(company)
+          setModalOpen(true)
+        }}
+      />
 
       <CompanyModal
         isOpen={modalOpen}

@@ -1,4 +1,4 @@
-import { ExternalLink, Globe, Mail, MapPin, Pencil, Phone, Trash2, Users } from 'lucide-react'
+import { ExternalLink, Eye, Globe, Mail, MapPin, Pencil, Phone, Trash2, Users } from 'lucide-react'
 import { Tooltip } from '@/components/ui'
 import type { Company } from '@/types/crm'
 import { CompanyStatusBadge } from './CompanyStatusBadge'
@@ -7,6 +7,7 @@ interface CompanyTableProps {
   companies: Company[]
   onEdit: (company: Company) => void
   onDelete: (company: Company) => void
+  onViewDetail?: (company: Company) => void
 }
 
 const AVATAR_PALETTES = [
@@ -41,7 +42,12 @@ function getCompanyMonogram(name: string) {
   return { initials, color }
 }
 
-export function CompanyTable({ companies, onEdit, onDelete }: CompanyTableProps) {
+export function CompanyTable({
+  companies,
+  onEdit,
+  onDelete,
+  onViewDetail,
+}: CompanyTableProps) {
   const formatInr = (amount?: number) => {
     if (!amount) return '—'
     return new Intl.NumberFormat('en-IN', {
@@ -77,9 +83,14 @@ export function CompanyTable({ companies, onEdit, onDelete }: CompanyTableProps)
                 className="hover:bg-slate-50/80 transition-colors duration-150 group"
               >
                 <td className="py-3.5 px-4">
-                  <div className="flex items-center gap-3">
+                  <div
+                    className={`flex items-center gap-3 ${onViewDetail ? 'cursor-pointer group' : ''}`}
+                    onClick={() => onViewDetail && onViewDetail(company)}
+                  >
                     <div
-                      className={`flex size-10 shrink-0 items-center justify-center rounded-md border text-xs font-bold tracking-tight ${color}`}
+                      className={`flex size-10 shrink-0 items-center justify-center rounded-md border text-xs font-bold tracking-tight transition-transform ${color} ${
+                        onViewDetail ? 'group-hover:scale-105' : ''
+                      }`}
                     >
                       {initials}
                     </div>
@@ -181,6 +192,18 @@ export function CompanyTable({ companies, onEdit, onDelete }: CompanyTableProps)
 
                 <td className="py-3.5 px-4 text-right">
                   <div className="flex items-center justify-end gap-1">
+                    {onViewDetail && (
+                      <Tooltip content="View 360° Account Details">
+                        <button
+                          type="button"
+                          onClick={() => onViewDetail(company)}
+                          className="size-7 flex items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:text-brand-600 hover:border-brand-200 hover:bg-brand-50 transition-all cursor-pointer"
+                          aria-label="View 360 account details"
+                        >
+                          <Eye className="size-3.5" />
+                        </button>
+                      </Tooltip>
+                    )}
                     <Tooltip content="Edit Company">
                       <button
                         type="button"

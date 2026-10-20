@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Calendar, DollarSign, FileText, PhoneCall, Sparkles } from 'lucide-react'
 import { Button, DatePicker, Input, Modal, Select, Textarea, type SelectOption } from '@/components/ui'
-import type { ActivityOutcome, ActivityType, CreateActivityPayload } from '@/types/crm'
+import type { ActivityOutcome, ActivityType, CreateActivityPayload, SalesActivity } from '@/types/crm'
 
 interface LogActivityModalProps {
   isOpen: boolean
   onClose: () => void
   onSave: (payload: CreateActivityPayload) => Promise<void>
   companyOptions: SelectOption[]
+  activity?: SalesActivity | null
 }
 
 const TYPE_OPTIONS: SelectOption[] = [
@@ -37,6 +38,7 @@ export function LogActivityModal({
   onClose,
   onSave,
   companyOptions,
+  activity,
 }: LogActivityModalProps) {
   const [type, setType] = useState<ActivityType>('cold_call')
   const [title, setTitle] = useState('')
@@ -48,6 +50,32 @@ export function LogActivityModal({
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (activity) {
+      setType(activity.type || 'cold_call')
+      setTitle(activity.title || '')
+      setDescription(activity.description || '')
+      setCompanyId(activity.companyId || '')
+      setStatus(activity.status || 'completed')
+      setOutcome(activity.outcome || 'positive')
+      setProposalValue(activity.proposalValue ?? '')
+      const dateVal = activity.completedAt || activity.scheduledAt || activity.createdAt
+      setDate(dateVal ? dateVal.slice(0, 10) : new Date().toISOString().slice(0, 10))
+    } else {
+      setType('cold_call')
+      setTitle('')
+      setDescription('')
+      setCompanyId('')
+      setStatus('completed')
+      setOutcome('positive')
+      setProposalValue('')
+      setDate(new Date().toISOString().slice(0, 10))
+    }
+    setError(null)
+  }, [activity, isOpen])
+
+  const isEditing = !!activity
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -70,12 +98,9 @@ export function LogActivityModal({
         completedAt: status === 'completed' ? new Date(date).toISOString() : undefined,
         scheduledAt: status === 'scheduled' ? new Date(date).toISOString() : undefined,
       })
-      setTitle('')
-      setDescription('')
-      setProposalValue('')
       onClose()
     } catch (err: any) {
-      setError(err?.response?.data?.message || err?.message || 'Failed to log activity.')
+      setError(err?.response?.data?.message || err?.message || 'Failed to save activity.')
     } finally {
       setIsSubmitting(false)
     }
@@ -85,8 +110,12 @@ export function LogActivityModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Log Sales Activity"
-      description="Record stakeholder interactions, cold calls, executive meetings, and quoted bids."
+      title={isEditing ? 'Edit Sales Activity' : 'Log Sales Activity'}
+      description={
+        isEditing
+          ? 'Modify interaction notes, execution status, buyer sentiment, or commercial bids.'
+          : 'Record stakeholder interactions, cold calls, executive meetings, and quoted bids.'
+      }
       size="xl"
     >
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -249,7 +278,7 @@ export function LogActivityModal({
           </Button>
           <Button type="submit" size="sm" disabled={isSubmitting} className="cursor-pointer bg-brand-600 hover:bg-brand-700 text-white">
             <Sparkles className="size-3.5 mr-1.5" />
-            {isSubmitting ? 'Logging...' : 'Save Activity'}
+            {isSubmitting ? (isEditing ? 'Updating...' : 'Logging...') : isEditing ? 'Update Activity' : 'Save Activity'}
           </Button>
         </div>
       </form>
