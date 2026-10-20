@@ -126,6 +126,22 @@ export type RevenueCategory =
 
 export type RevenueFrequency = 'monthly' | 'quarterly' | 'annually' | 'milestone'
 
+export interface LeadContactItem {
+  id: string
+  firstName: string
+  lastName: string
+  salutation?: Salutation
+  gender?: Gender
+  designation?: string
+  email: string
+  phone?: string
+  dateOfBirth?: string
+  contactDescription?: string
+  linkedInUrl?: string
+  twitterHandle?: string
+  isPrimary?: boolean
+}
+
 export interface Lead {
   id: string
   organizationId: string
@@ -158,6 +174,7 @@ export interface Lead {
   contactDescription?: string
   linkedInUrl?: string
   twitterHandle?: string
+  contacts?: LeadContactItem[]
   createdAt: string
   updatedAt: string
 }
@@ -181,17 +198,18 @@ export interface CreateLeadPayload {
   contractPeriod?: number
   isMustWin?: boolean
   scope?: string
-  contactFirstName: string
-  contactLastName: string
+  contactFirstName?: string
+  contactLastName?: string
   salutation?: Salutation
   gender?: Gender
   designation?: string
-  contactEmail: string
+  contactEmail?: string
   contactPhone?: string
   dateOfBirth?: string
   contactDescription?: string
   linkedInUrl?: string
   twitterHandle?: string
+  contacts?: LeadContactItem[]
 }
 
 export type UpdateLeadPayload = Partial<CreateLeadPayload>

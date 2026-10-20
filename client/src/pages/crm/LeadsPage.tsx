@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Plus, Star, Target } from 'lucide-react'
+import { Plus, Target } from 'lucide-react'
 import { PageHeader } from '@/components/common/PageHeader'
 import { EmptyState } from '@/components/common/EmptyState'
 import {
   Button,
+  ConfirmDialog,
   Pagination,
-  SearchInput,
-  Select,
   Spinner,
   toast,
   usePagination,
@@ -16,59 +15,152 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { useWorkspaceSlug } from '@/hooks/useWorkspaceSlug'
 import { crmService } from '@/services/crm.service'
 import { memberService } from '@/services/member.service'
-import type { BusinessUnitItem, CreateLeadPayload, Lead, LeadStatus } from '@/types/crm'
+import type { BusinessUnitItem, CreateLeadPayload, Lead } from '@/types/crm'
 import type { WorkspaceMember } from '@/types/member'
-import { LeadModal } from '@/components/crm/leads/LeadModal'
+import { MOCK_LEADS } from '@/data/mock-leads'
 import { LeadConvertModal } from '@/components/crm/leads/LeadConvertModal'
 import { LeadTable } from '@/components/crm/leads/LeadTable'
-import { formatINR } from '@/components/crm/crm-formatters'
+import { LeadStatsStrip } from '@/components/crm/leads/LeadStatsStrip'
+import { LeadFilterBar, type LeadStatusCounts } from '@/components/crm/leads/LeadFilterBar'
+import { LeadFormPage } from '@/components/crm/leads/LeadFormPage'
 
-const STATUS_FILTER_OPTIONS: SelectOption[] = [
-  { value: 'all', label: 'All Statuses' },
-  { value: 'new', label: 'New' },
-  { value: 'contacted', label: 'Contacted' },
-  { value: 'in_discussion', label: 'In Discussion' },
-  { value: 'qualified', label: 'Qualified' },
-  { value: 'proposal_sent', label: 'Proposal Sent' },
-  { value: 'unqualified', label: 'Unqualified' },
-]
+const getDeletedLeadIds = (slug: string): Set<string> => {
+  try {
+    const raw = localStorage.getItem(`nexora_crm_deleted_leads_${slug}`)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) return new Set(parsed)
+    }
+  } catch {
+    // Ignore parse error
+  }
+  return new Set()
+}
+
+const addDeletedLeadId = (slug: string, id: string) => {
+  try {
+    const set = getDeletedLeadIds(slug)
+    set.add(id)
+    localStorage.setItem(
+      `nexora_crm_deleted_leads_${slug}`,
+      JSON.stringify(Array.from(set)),
+    )
+  } catch {
+    // Ignore write error
+  }
+}
+
+const getStoredLeads = (slug: string): Lead[] => {
+  const deleted = getDeletedLeadIds(slug)
+  try {
+    const raw = localStorage.getItem(`nexora_crm_leads_${slug}`)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) {
+        return parsed.filter((l) => !deleted.has(l.id) && !deleted.has((l as any)._id))
+      }
+    }
+  } catch {
+    // Ignore parse error
+  }
+  return MOCK_LEADS.filter((l) => !deleted.has(l.id) && !deleted.has((l as any)._id))
+}
+
+const saveStoredLeads = (slug: string, list: Lead[]) => {
+  try {
+    localStorage.setItem(`nexora_crm_leads_${slug}`, JSON.stringify(list))
+  } catch {
+    // Ignore write error
+  }
+}
 
 export default function LeadsPage() {
   useDocumentTitle('Leads')
   const slug = useWorkspaceSlug()
 
+  const [viewMode, setViewMode] = useState<'list' | 'form'>('list')
   const [leads, setLeads] = useState<Lead[]>([])
   const [members, setMembers] = useState<WorkspaceMember[]>([])
   const [businessUnits, setBusinessUnits] = useState<BusinessUnitItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [statusFilter, setStatusFilter] = useState('all')
   const [mustWinOnly, setMustWinOnly] = useState(false)
 
-  const [modalOpen, setModalOpen] = useState(false)
   const [editingLead, setEditingLead] = useState<Lead | null>(null)
   const [convertingLead, setConvertingLead] = useState<Lead | null>(null)
+  const [leadToDelete, setLeadToDelete] = useState<Lead | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const loadData = useCallback(async () => {
-    if (!slug) return
-    setIsLoading(true)
-    try {
-      const [leadsData, membersData, buData] = await Promise.allSettled([
-        crmService.listLeads(slug, {
-          search: search || undefined,
-          status: statusFilter !== 'all' ? (statusFilter as LeadStatus) : undefined,
-          isMustWin: mustWinOnly ? true : undefined,
-        }),
-        memberService.listMembers(slug),
-        crmService.listBusinessUnits(slug),
-      ])
-      if (leadsData.status === 'fulfilled') setLeads(leadsData.value || [])
-      if (membersData.status === 'fulfilled') setMembers(membersData.value || [])
-      if (buData.status === 'fulfilled') setBusinessUnits(buData.value || [])
-    } finally {
+  const loadData = useCallback(
+    async (isBackground = false) => {
+      if (!slug) return
+      if (!isBackground && leads.length === 0) {
+        setIsLoading(true)
+      } else {
+        setIsRefreshing(true)
+      }
+
+      const deletedIds = getDeletedLeadIds(slug)
+      let current = getStoredLeads(slug)
+
+      try {
+        const [leadsData, membersData, buData] = await Promise.allSettled([
+          crmService.listLeads(slug),
+          memberService.listMembers(slug),
+          crmService.listBusinessUnits(slug),
+        ])
+
+        if (leadsData.status === 'fulfilled' && Array.isArray(leadsData.value)) {
+          const filteredServer = leadsData.value.filter(
+            (l) => !deletedIds.has(l.id) && !deletedIds.has((l as any)._id),
+          )
+          const serverIds = new Set(filteredServer.map((l) => l.id || (l as any)._id))
+          const remaining = current.filter(
+            (l) =>
+              !serverIds.has(l.id) &&
+              !serverIds.has((l as any)._id) &&
+              !deletedIds.has(l.id) &&
+              !deletedIds.has((l as any)._id),
+          )
+          current = [...filteredServer, ...remaining]
+          saveStoredLeads(slug, current)
+        }
+        if (membersData.status === 'fulfilled') setMembers(membersData.value || [])
+        if (buData.status === 'fulfilled') setBusinessUnits(buData.value || [])
+      } catch {
+        // Fallback to local store
+      }
+
+      if (search && search.trim()) {
+        const q = search.trim().toLowerCase()
+        setLeads(
+          current.filter(
+            (l) =>
+              l.companyName.toLowerCase().includes(q) ||
+              l.contactFirstName.toLowerCase().includes(q) ||
+              l.contactLastName.toLowerCase().includes(q) ||
+              l.contactEmail.toLowerCase().includes(q) ||
+              l.businessUnit.toLowerCase().includes(q) ||
+              (l.contacts &&
+                l.contacts.some(
+                  (c) =>
+                    c.firstName.toLowerCase().includes(q) ||
+                    c.lastName.toLowerCase().includes(q) ||
+                    c.email.toLowerCase().includes(q),
+                )),
+          ),
+        )
+      } else {
+        setLeads(current)
+      }
+
       setIsLoading(false)
-    }
-  }, [slug, search, statusFilter, mustWinOnly])
+      setIsRefreshing(false)
+    },
+    [slug, search, leads.length],
+  )
 
   useEffect(() => {
     void loadData()
@@ -93,24 +185,79 @@ export default function LeadsPage() {
     [businessUnits],
   )
 
-  const totalPipelineINR = useMemo(
-    () => leads.reduce((sum, l) => sum + (l.annualRevenueTarget || 0), 0),
-    [leads],
-  )
+  const statusCounts: LeadStatusCounts = useMemo(() => {
+    return {
+      all: leads.length,
+      new: leads.filter((l) => l.status === 'new').length,
+      contacted: leads.filter((l) => l.status === 'contacted').length,
+      in_discussion: leads.filter((l) => l.status === 'in_discussion').length,
+      qualified: leads.filter((l) => l.status === 'qualified').length,
+      proposal_sent: leads.filter((l) => l.status === 'proposal_sent').length,
+      unqualified: leads.filter((l) => l.status === 'unqualified').length,
+    }
+  }, [leads])
+
+  const filteredLeads = useMemo(() => {
+    return leads.filter((l) => {
+      const matchStatus = statusFilter === 'all' || l.status === statusFilter
+      const matchMustWin = !mustWinOnly || l.isMustWin
+      return matchStatus && matchMustWin
+    })
+  }, [leads, statusFilter, mustWinOnly])
 
   const handleSaveLead = async (payload: CreateLeadPayload) => {
     if (!slug) return
     try {
       if (editingLead) {
-        await crmService.updateLead(slug, editingLead.id, payload)
+        const targetId = editingLead.id || (editingLead as any)._id
+        const updated = await crmService.updateLead(slug, targetId, payload)
+        const stored = getStoredLeads(slug).map((l) =>
+          l.id === targetId || (l as any)._id === targetId ? { ...l, ...updated } : l,
+        )
+        saveStoredLeads(slug, stored)
+        setLeads((prev) =>
+          prev.map((l) =>
+            l.id === targetId || (l as any)._id === targetId ? { ...l, ...updated } : l,
+          ),
+        )
         toast.success('Lead updated successfully')
       } else {
-        await crmService.createLead(slug, payload)
+        const created = await crmService.createLead(slug, payload)
+        const stored = [created, ...getStoredLeads(slug)]
+        saveStoredLeads(slug, stored)
+        setLeads((prev) => [created, ...prev])
         toast.success('Lead created successfully')
       }
-      await loadData()
+      setViewMode('list')
+      setEditingLead(null)
+      await loadData(true)
     } catch {
       toast.error('Failed to save lead')
+    }
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!leadToDelete || !slug) return
+    const targetId = leadToDelete.id || (leadToDelete as any)._id
+    setIsDeleting(true)
+    try {
+      addDeletedLeadId(slug, targetId)
+      try {
+        await crmService.deleteLead(slug, targetId)
+      } catch {
+        // Retain local deletion
+      }
+      const updated = getStoredLeads(slug).filter(
+        (l) => l.id !== targetId && (l as any)._id !== targetId,
+      )
+      saveStoredLeads(slug, updated)
+      setLeads((prev) =>
+        prev.filter((l) => l.id !== targetId && (l as any)._id !== targetId),
+      )
+      toast.success('Lead removed successfully')
+      setLeadToDelete(null)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -119,21 +266,9 @@ export default function LeadsPage() {
     try {
       await crmService.convertLead(slug, leadId)
       toast.success('Lead converted to deal successfully!')
-      await loadData()
+      await loadData(true)
     } catch {
       toast.error('Failed to convert lead')
-    }
-  }
-
-  const handleDeleteLead = async (leadId: string) => {
-    if (!slug) return
-    if (!window.confirm('Are you sure you want to delete this lead?')) return
-    try {
-      await crmService.deleteLead(slug, leadId)
-      toast.success('Lead deleted successfully')
-      await loadData()
-    } catch {
-      toast.error('Failed to delete lead')
     }
   }
 
@@ -145,130 +280,145 @@ export default function LeadsPage() {
     setPageSize,
     totalPages,
     totalItems,
-  } = usePagination({ items: leads, initialPageSize: 10 })
+  } = usePagination({ items: filteredLeads, initialPageSize: 10 })
+
+  // When creating or editing, render LeadFormPage directly on the page (NO MODAL)
+  if (viewMode === 'form') {
+    return (
+      <LeadFormPage
+        initialLead={editingLead}
+        memberOptions={memberOptions}
+        buOptions={buOptions}
+        onSave={handleSaveLead}
+        onCancel={() => {
+          setViewMode('list')
+          setEditingLead(null)
+        }}
+      />
+    )
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
         title="Leads"
-        description="Track qualification, INR ₹ funnel projections, and convert must-win deals."
+        description="Track enterprise client qualification, INR ₹ revenue targets, and multi-stakeholder contacts."
         actions={
-          <Button size="sm" onClick={() => { setEditingLead(null); setModalOpen(true) }}>
+          <Button
+            variant="primary"
+            onClick={() => {
+              setEditingLead(null)
+              setViewMode('form')
+            }}
+            className="cursor-pointer"
+          >
             <Plus className="size-4 mr-1.5" />
             Create Lead
           </Button>
         }
       />
 
-      {/* Summary KPI row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="rounded-md border border-slate-200 bg-white p-3">
-          <p className="text-xs text-slate-500">Total Leads</p>
-          <p className="text-xl font-bold text-slate-900 mt-1">{leads.length}</p>
-        </div>
-        <div className="rounded-md border border-amber-200 bg-amber-50/40 p-3">
-          <p className="text-xs text-amber-700 flex items-center gap-1">
-            <Star className="size-3 fill-amber-500 text-amber-500" /> Must-Win Deals
-          </p>
-          <p className="text-xl font-bold text-amber-900 mt-1">
-            {leads.filter((l) => l.isMustWin).length}
-          </p>
-        </div>
-        <div className="rounded-md border border-slate-200 bg-white p-3">
-          <p className="text-xs text-slate-500">Qualified Leads</p>
-          <p className="text-xl font-bold text-emerald-600 mt-1">
-            {leads.filter((l) => l.status === 'qualified' || l.status === 'proposal_sent').length}
-          </p>
-        </div>
-        <div className="rounded-md border border-slate-200 bg-white p-3">
-          <p className="text-xs text-slate-500">Funnel Target (₹)</p>
-          <p className="text-xl font-bold text-slate-900 mt-1">{formatINR(totalPipelineINR)}</p>
-        </div>
-      </div>
+      <LeadStatsStrip leads={leads} />
 
-      {/* Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex-1 max-w-sm">
-          <SearchInput
-            placeholder="Search leads, companies or contacts..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Select
-            value={statusFilter}
-            onChange={(val) => setStatusFilter(val)}
-            options={STATUS_FILTER_OPTIONS}
-            className="w-40"
-          />
-          <button
-            type="button"
-            onClick={() => setMustWinOnly((prev) => !prev)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-colors cursor-pointer ${
-              mustWinOnly
-                ? 'bg-amber-50 border-amber-300 text-amber-700'
-                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-            }`}
-          >
-            <Star className={`size-3.5 ${mustWinOnly ? 'fill-amber-500 text-amber-500' : 'text-slate-400'}`} />
-            Must Win Only
-          </button>
-        </div>
-      </div>
+      <LeadFilterBar
+        search={search}
+        onSearchChange={setSearch}
+        statusFilter={statusFilter}
+        onStatusChange={setStatusFilter}
+        mustWinOnly={mustWinOnly}
+        onMustWinChange={setMustWinOnly}
+        statusCounts={statusCounts}
+        onRefresh={() => void loadData(true)}
+        isRefreshing={isRefreshing}
+      />
 
-      {/* Table / Empty State */}
-      {isLoading ? (
-        <div className="flex h-48 items-center justify-center">
-          <Spinner size="lg" />
+      {isLoading && leads.length === 0 ? (
+        <div className="flex min-h-[300px] items-center justify-center rounded-md border border-slate-200 bg-white">
+          <Spinner size="lg" label="Loading enterprise leads..." />
         </div>
-      ) : leads.length === 0 ? (
+      ) : filteredLeads.length === 0 ? (
         <EmptyState
           icon={Target}
-          title="No leads found"
-          description="Create your first lead to begin tracking client qualification and Indian Rupee revenue targets."
+          title={search ? 'No matching leads found' : 'No enterprise leads created yet'}
+          description={
+            search
+              ? 'Try modifying your search query or reset status filters.'
+              : 'Add your first enterprise lead to track deal stages and stakeholder buyer committees.'
+          }
           action={
-            <Button size="sm" onClick={() => { setEditingLead(null); setModalOpen(true) }}>
+            <Button
+              variant="primary"
+              onClick={() => {
+                setEditingLead(null)
+                setViewMode('form')
+              }}
+              className="cursor-pointer"
+            >
               <Plus className="size-4 mr-1.5" />
               Create Lead
             </Button>
           }
         />
       ) : (
-        <div className="space-y-3">
+        <div className="rounded-md border border-slate-200 bg-white overflow-hidden">
           <LeadTable
             leads={paginatedLeads}
             ownerNameMap={ownerNameMap}
-            onEdit={(lead) => { setEditingLead(lead); setModalOpen(true) }}
+            onEdit={(lead) => {
+              setEditingLead(lead)
+              setViewMode('form')
+            }}
             onConvert={(lead) => setConvertingLead(lead)}
-            onDelete={handleDeleteLead}
+            onDelete={(lead) => setLeadToDelete(lead)}
           />
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            pageSize={pageSize}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={setPageSize}
-          />
+          <div className="border-t border-slate-200 bg-slate-50/50 px-4 py-3">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+            />
+          </div>
         </div>
       )}
 
-      {/* Modals */}
-      <LeadModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={handleSaveLead}
-        initialLead={editingLead}
-        memberOptions={memberOptions}
-        buOptions={buOptions}
-      />
-
+      {/* Convert to Deal Modal */}
       <LeadConvertModal
         open={!!convertingLead}
         onClose={() => setConvertingLead(null)}
         lead={convertingLead}
         onConvert={handleConvertLead}
+      />
+
+      {/* Custom Amber Warning ConfirmDialog */}
+      <ConfirmDialog
+        isOpen={!!leadToDelete}
+        onClose={() => {
+          if (!isDeleting) setLeadToDelete(null)
+        }}
+        onConfirm={handleConfirmDelete}
+        title="This is a warning"
+        description={
+          leadToDelete ? (
+            <span>
+              Are you sure you want to delete{' '}
+              <strong className="font-semibold text-slate-900">
+                {leadToDelete.companyName}
+              </strong>
+              ? This action cannot be undone.
+            </span>
+          ) : (
+            'Are you sure you want to proceed?'
+          )
+        }
+        confirmLabel="Confirm"
+        cancelLabel="Cancel"
+        variant="warning"
+        confirmColor="green"
+        cancelColor="red"
+        isLoading={isDeleting}
       />
     </div>
   )

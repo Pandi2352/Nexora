@@ -153,30 +153,59 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/leads`,
       { params: options },
     )
-    return res.data
+    const list = res.data || []
+    return list.map((l: any) => ({
+      ...l,
+      id: l.id || l._id,
+    }))
   },
 
   async getLead(orgSlug: string, id: string): Promise<Lead> {
     const res = await apiClient.get<ApiResponseWrapper<Lead>>(
       `/organizations/${orgSlug}/crm/leads/${id}`,
     )
-    return res.data
+    const lead = res.data
+    return { ...lead, id: lead.id || (lead as any)._id }
   },
 
   async createLead(orgSlug: string, payload: CreateLeadPayload): Promise<Lead> {
+    const body = { ...payload }
+    if (body.contacts && body.contacts.length > 0) {
+      const primary = body.contacts.find((c) => c.isPrimary) || body.contacts[0]
+      if (primary) {
+        if (!body.contactFirstName) body.contactFirstName = primary.firstName
+        if (!body.contactLastName) body.contactLastName = primary.lastName
+        if (!body.contactEmail) body.contactEmail = primary.email
+        if (!body.contactPhone) body.contactPhone = primary.phone
+        if (!body.designation) body.designation = primary.designation
+      }
+    }
     const res = await apiClient.post<ApiResponseWrapper<Lead>>(
       `/organizations/${orgSlug}/crm/leads`,
-      payload,
+      body,
     )
-    return res.data
+    const lead = res.data
+    return { ...lead, id: lead.id || (lead as any)._id }
   },
 
   async updateLead(orgSlug: string, id: string, payload: UpdateLeadPayload): Promise<Lead> {
+    const body = { ...payload }
+    if (body.contacts && body.contacts.length > 0) {
+      const primary = body.contacts.find((c) => c.isPrimary) || body.contacts[0]
+      if (primary) {
+        if (!body.contactFirstName) body.contactFirstName = primary.firstName
+        if (!body.contactLastName) body.contactLastName = primary.lastName
+        if (!body.contactEmail) body.contactEmail = primary.email
+        if (!body.contactPhone) body.contactPhone = primary.phone
+        if (!body.designation) body.designation = primary.designation
+      }
+    }
     const res = await apiClient.patch<ApiResponseWrapper<Lead>>(
       `/organizations/${orgSlug}/crm/leads/${id}`,
-      payload,
+      body,
     )
-    return res.data
+    const lead = res.data
+    return { ...lead, id: lead.id || (lead as any)._id }
   },
 
   async convertLead(orgSlug: string, id: string): Promise<ConvertedLeadResult> {

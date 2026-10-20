@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsArray,
   IsBoolean,
   IsDateString,
   IsEmail,
@@ -113,17 +114,17 @@ export class CreateLeadDto {
   scope?: string;
 
   // Contact Information
-  @ApiProperty({ example: 'Arun' })
+  @ApiPropertyOptional({ example: 'Arun' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @MaxLength(100)
-  contactFirstName: string;
+  contactFirstName?: string;
 
-  @ApiProperty({ example: 'Kumar' })
+  @ApiPropertyOptional({ example: 'Kumar' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @MaxLength(100)
-  contactLastName: string;
+  contactLastName?: string;
 
   @ApiPropertyOptional({ example: 'Mr.' })
   @IsOptional()
@@ -141,10 +142,10 @@ export class CreateLeadDto {
   @MaxLength(150)
   designation?: string;
 
-  @ApiProperty({ example: 'arun.kumar@nexora.inc' })
+  @ApiPropertyOptional({ example: 'arun.kumar@nexora.inc' })
+  @IsOptional()
   @IsEmail()
-  @IsNotEmpty()
-  contactEmail: string;
+  contactEmail?: string;
 
   @ApiPropertyOptional({ example: '+91 98400 12345' })
   @IsOptional()
@@ -174,6 +175,11 @@ export class CreateLeadDto {
   @IsString()
   @MaxLength(100)
   twitterHandle?: string;
+
+  @ApiPropertyOptional({ type: [Object] })
+  @IsOptional()
+  @IsArray()
+  contacts?: any[];
 }
 
 export class UpdateLeadDto extends CreateLeadDto {}

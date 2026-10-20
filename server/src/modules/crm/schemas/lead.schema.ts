@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import type { HydratedDocument } from 'mongoose';
-import { BaseDocument } from '@/database/base.schema';
+import { BaseDocument, defaultSchemaOptions, applyBaseSchemaPlugins } from '@/database/base.schema';
 
 export type LeadDocument = HydratedDocument<Lead>;
 
-@Schema({ collection: 'leads', timestamps: true, versionKey: false })
+@Schema({ ...defaultSchemaOptions, collection: 'leads' })
 export class Lead extends BaseDocument {
   @Prop({ type: String, required: true, index: true })
   organizationId: string;
@@ -130,9 +130,24 @@ export class Lead extends BaseDocument {
 
   @Prop({ type: String, trim: true, maxlength: 100 })
   twitterHandle?: string;
+
+  @Prop({ type: [Object], default: [] })
+  contacts?: Array<{
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    designation?: string;
+    isPrimary?: boolean;
+    salutation?: string;
+    gender?: string;
+    linkedInUrl?: string;
+    twitterHandle?: string;
+  }>;
 }
 
-export const LeadSchema = SchemaFactory.createForClass(Lead);
+export const LeadSchema = applyBaseSchemaPlugins(SchemaFactory.createForClass(Lead));
 LeadSchema.index({ organizationId: 1, status: 1 });
 LeadSchema.index({ organizationId: 1, isMustWin: 1 });
 LeadSchema.index({ organizationId: 1, leadOwnerId: 1 });

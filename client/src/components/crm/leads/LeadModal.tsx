@@ -102,7 +102,11 @@ export function LeadModal({
       setError('Company name is required.')
       return
     }
-    if (!form.contactFirstName.trim() || !form.contactLastName.trim() || !form.contactEmail.trim()) {
+    if (
+      !(form.contactFirstName || '').trim() ||
+      !(form.contactLastName || '').trim() ||
+      !(form.contactEmail || '').trim()
+    ) {
       setActiveTab('contact')
       setError('Contact First Name, Last Name and Email are required.')
       return
