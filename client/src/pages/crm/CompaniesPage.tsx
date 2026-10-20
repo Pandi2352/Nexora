@@ -80,6 +80,7 @@ export default function CompaniesPage() {
 
   const [companies, setCompanies] = useState<Company[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [search, setSearch] = useState('')
   const [industryFilter, setIndustryFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -88,9 +89,14 @@ export default function CompaniesPage() {
   const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const loadCompanies = useCallback(async () => {
+  const loadCompanies = useCallback(async (isBackground = false) => {
     if (!slug) return
-    setIsLoading(true)
+    if (!isBackground && companies.length === 0) {
+      setIsLoading(true)
+    } else {
+      setIsRefreshing(true)
+    }
+
     const deletedIds = getDeletedCompanyIds(slug)
     let current = getStoredCompanies(slug)
 
@@ -131,7 +137,8 @@ export default function CompaniesPage() {
       setCompanies(current)
     }
     setIsLoading(false)
-  }, [slug, search])
+    setIsRefreshing(false)
+  }, [slug, search, companies.length])
 
   useEffect(() => {
     void loadCompanies()
@@ -254,14 +261,14 @@ export default function CompaniesPage() {
         onSearchChange={setSearch}
         statusFilter={statusFilter}
         onStatusChange={setStatusFilter}
+        statusCounts={statusCounts}
         industryFilter={industryFilter}
         onIndustryChange={setIndustryFilter}
-        statusCounts={statusCounts}
-        onRefresh={() => void loadCompanies()}
-        isRefreshing={isLoading}
+        onRefresh={() => void loadCompanies(true)}
+        isRefreshing={isRefreshing}
       />
 
-      {isLoading ? (
+      {isLoading && companies.length === 0 ? (
         <div className="flex min-h-[300px] items-center justify-center rounded-md border border-slate-200 bg-white">
           <Spinner size="lg" label="Loading companies..." />
         </div>

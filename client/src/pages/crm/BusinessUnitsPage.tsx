@@ -80,6 +80,7 @@ export default function BusinessUnitsPage() {
 
   const [units, setUnits] = useState<BusinessUnitItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [modalOpen, setModalOpen] = useState(false)
@@ -87,9 +88,13 @@ export default function BusinessUnitsPage() {
   const [unitToDelete, setUnitToDelete] = useState<BusinessUnitItem | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const loadUnits = useCallback(async () => {
+  const loadUnits = useCallback(async (isBackground = false) => {
     if (!slug) return
-    setIsLoading(true)
+    if (!isBackground && units.length === 0) {
+      setIsLoading(true)
+    } else {
+      setIsRefreshing(true)
+    }
     const deletedIds = getDeletedBusinessUnitIds(slug)
     let current = getStoredBusinessUnits(slug)
 
@@ -130,7 +135,8 @@ export default function BusinessUnitsPage() {
       setUnits(current)
     }
     setIsLoading(false)
-  }, [slug, search])
+    setIsRefreshing(false)
+  }, [slug, search, units.length])
 
   useEffect(() => {
     void loadUnits()
@@ -254,11 +260,11 @@ export default function BusinessUnitsPage() {
         statusFilter={statusFilter}
         onStatusChange={setStatusFilter}
         statusCounts={statusCounts}
-        onRefresh={() => void loadUnits()}
-        isRefreshing={isLoading}
+        onRefresh={() => void loadUnits(true)}
+        isRefreshing={isRefreshing}
       />
 
-      {isLoading ? (
+      {isLoading && units.length === 0 ? (
         <div className="flex min-h-[300px] items-center justify-center rounded-md border border-slate-200 bg-white">
           <Spinner size="lg" label="Loading business units..." />
         </div>

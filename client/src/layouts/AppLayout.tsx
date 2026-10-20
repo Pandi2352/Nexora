@@ -34,7 +34,7 @@ export function AppLayout() {
             id="main-content"
             ref={mainRef}
             tabIndex={-1}
-            className="custom-scrollbar flex-1 overflow-y-auto focus:outline-none"
+            className="custom-scrollbar flex-1 overflow-y-scroll [scrollbar-gutter:stable] focus:outline-none"
           >
             <div className="flex min-h-full flex-col w-full px-4 py-6 sm:px-6">
               <Outlet />
