@@ -163,13 +163,14 @@ export function Tooltip({
             role="tooltip"
             style={coords}
             className={cn(
-              'relative px-2.5 py-1 text-[11px] font-medium leading-none',
+              'relative px-3 py-1.5 text-xs font-medium',
               'bg-slate-900 text-white rounded-md whitespace-nowrap shadow-none',
               'border border-slate-700/80 select-none animate-in fade-in zoom-in-95 duration-100',
+              'flex items-center justify-center text-center leading-normal',
               className,
             )}
           >
-            {content}
+            <span className="block text-center">{content}</span>
             {/* Modern arrow pointer pointing towards the trigger */}
             <span
               className={cn(

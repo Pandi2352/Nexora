@@ -288,7 +288,11 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/business-units`,
       { params: includeInactive ? { includeInactive: true } : undefined },
     )
-    return res.data
+    const list = res.data || []
+    return list.map((u: any) => ({
+      ...u,
+      id: u.id || u._id,
+    }))
   },
 
   async createBusinessUnit(
@@ -299,7 +303,11 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/business-units`,
       payload,
     )
-    return res.data
+    const data = res.data as any
+    return {
+      ...data,
+      id: data.id || data._id,
+    }
   },
 
   async updateBusinessUnit(
@@ -311,10 +319,17 @@ export const crmService = {
       `/organizations/${orgSlug}/crm/business-units/${id}`,
       payload,
     )
-    return res.data
+    const data = res.data as any
+    return {
+      ...data,
+      id: data.id || data._id,
+    }
   },
 
   async deleteBusinessUnit(orgSlug: string, id: string): Promise<void> {
+    if (!id || id === 'undefined') {
+      throw new Error('Valid business unit ID is required for deletion')
+    }
     await apiClient.delete(`/organizations/${orgSlug}/crm/business-units/${id}`)
   },
 }

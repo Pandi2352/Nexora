@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import type { HydratedDocument } from 'mongoose';
-import { BaseDocument } from '@/database/base.schema';
+import { BaseDocument, defaultSchemaOptions, applyBaseSchemaPlugins } from '@/database/base.schema';
 
 export type BusinessUnitDocument = HydratedDocument<BusinessUnit>;
 
-@Schema({ collection: 'business_units', timestamps: true, versionKey: false })
+@Schema({ collection: 'business_units', ...defaultSchemaOptions })
 export class BusinessUnit extends BaseDocument {
   @Prop({ type: String, required: true, index: true })
   organizationId: string;
@@ -28,7 +28,7 @@ export class BusinessUnit extends BaseDocument {
   createdById: string;
 }
 
-export const BusinessUnitSchema = SchemaFactory.createForClass(BusinessUnit);
+export const BusinessUnitSchema = applyBaseSchemaPlugins(SchemaFactory.createForClass(BusinessUnit));
 
 BusinessUnitSchema.index({ organizationId: 1, name: 1 }, { unique: true });
 BusinessUnitSchema.index({ organizationId: 1, code: 1 }, { unique: true });

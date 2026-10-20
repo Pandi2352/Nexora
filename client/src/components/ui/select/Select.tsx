@@ -117,8 +117,8 @@ export function Select<T = string>(props: SelectProps<T>): React.JSX.Element {
     }
   }
 
-  const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
-    if (!containerRef.current?.contains(e.relatedTarget as Node)) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Escape' || e.key === 'Tab') {
       setIsOpen(false)
     }
   }
@@ -126,7 +126,7 @@ export function Select<T = string>(props: SelectProps<T>): React.JSX.Element {
   return (
     <div
       ref={containerRef}
-      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
       className={cn('relative w-full space-y-1', isOpen && 'z-30', className)}
     >
       {(label || cornerAction) && (

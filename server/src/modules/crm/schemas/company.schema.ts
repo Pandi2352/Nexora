@@ -59,9 +59,6 @@ export class Company extends BaseDocument {
 
   @Prop({ type: String, index: true })
   ownerId?: string;
-
-  @Prop({ type: String, trim: true, maxlength: 1000 })
-  notes?: string;
 }
 
 export const CompanySchema = applyBaseSchemaPlugins(SchemaFactory.createForClass(Company));

@@ -98,6 +98,10 @@ export function SelectMenu<T = string>({
                 role="option"
                 aria-selected={isSelected}
                 aria-disabled={opt.disabled}
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  if (!opt.disabled) onSelect(opt)
+                }}
                 onClick={() => !opt.disabled && onSelect(opt)}
                 className={cn(
                   'flex items-center justify-between px-3 py-2 text-xs sm:text-sm cursor-pointer select-none transition-colors',

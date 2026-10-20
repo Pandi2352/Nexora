@@ -182,7 +182,7 @@ export function InputFeedback({
             <span>{success}</span>
           </p>
         ) : hint ? (
-          <p id={hintId} className="text-xs text-slate-500 font-normal leading-normal">{hint}</p>
+          <p id={hintId} className="text-[11px] text-slate-400 font-normal leading-normal">{hint}</p>
         ) : null}
       </div>
 

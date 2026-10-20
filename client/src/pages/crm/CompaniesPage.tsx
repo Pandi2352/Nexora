@@ -147,11 +147,17 @@ export default function CompaniesPage() {
           c.id === targetId || (c as any)._id === targetId ? { ...c, ...updated } : c,
         )
         saveStoredCompanies(slug, stored)
+        setCompanies((prev) =>
+          prev.map((c) =>
+            c.id === targetId || (c as any)._id === targetId ? { ...c, ...updated } : c,
+          ),
+        )
         toast.success('Company updated successfully')
       } else {
         const created = await crmService.createCompany(slug, payload)
         const stored = [created, ...getStoredCompanies(slug)]
         saveStoredCompanies(slug, stored)
+        setCompanies((prev) => [created, ...prev])
         toast.success('Company created successfully')
       }
       await loadCompanies()

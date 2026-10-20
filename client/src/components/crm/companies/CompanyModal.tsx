@@ -36,7 +36,6 @@ export function CompanyModal({ isOpen, onClose, onSave, company }: CompanyModalP
   const [status, setStatus] = useState<CompanyStatus>('prospect')
   const [city, setCity] = useState('')
   const [country, setCountry] = useState('')
-  const [notes, setNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -52,7 +51,6 @@ export function CompanyModal({ isOpen, onClose, onSave, company }: CompanyModalP
       setStatus(company.status || 'prospect')
       setCity(company.address?.city || '')
       setCountry(company.address?.country || '')
-      setNotes(company.notes || '')
     } else {
       setName('')
       setIndustry('')
@@ -64,7 +62,6 @@ export function CompanyModal({ isOpen, onClose, onSave, company }: CompanyModalP
       setStatus('prospect')
       setCity('')
       setCountry('')
-      setNotes('')
     }
     setError(null)
   }, [company, isOpen])
@@ -89,7 +86,6 @@ export function CompanyModal({ isOpen, onClose, onSave, company }: CompanyModalP
         employeeCount,
         status,
         address: city || country ? { city: city.trim(), country: country.trim() } : undefined,
-        notes: notes.trim() || undefined,
       })
       onClose()
     } catch {
@@ -117,14 +113,14 @@ export function CompanyModal({ isOpen, onClose, onSave, company }: CompanyModalP
         </div>
       }
     >
-      <form id="company-form" onSubmit={handleSubmit} className="space-y-5 py-2">
+      <form id="company-form" onSubmit={handleSubmit} className="space-y-4 py-2">
         {error && (
           <div className="p-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded-md">
             {error}
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Company Name"
             placeholder="Acme Global Inc"
@@ -140,12 +136,13 @@ export function CompanyModal({ isOpen, onClose, onSave, company }: CompanyModalP
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Website"
             placeholder="https://example.com"
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
+            hint="Include full URL e.g. https://company.com"
           />
           <Input
             label="Email"
@@ -156,7 +153,7 @@ export function CompanyModal({ isOpen, onClose, onSave, company }: CompanyModalP
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input
             label="Phone Number"
             placeholder="+91 98765 43210"
@@ -169,21 +166,24 @@ export function CompanyModal({ isOpen, onClose, onSave, company }: CompanyModalP
             placeholder="5000000"
             value={annualRevenue}
             onChange={(e) => setAnnualRevenue(e.target.value)}
+            hint="Estimated annual gross turnover"
           />
           <Select
             label="Company Status"
             value={status}
             options={STATUS_OPTIONS}
             onChange={(val) => setStatus(val as CompanyStatus)}
+            hint="Sales lifecycle relationship stage"
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Select
             label="Employee Count"
             value={employeeCount}
             options={EMPLOYEE_OPTIONS}
             onChange={(val) => setEmployeeCount(val)}
+            hint="Estimated organization headcount"
           />
           <Input
             label="City"
@@ -195,20 +195,6 @@ export function CompanyModal({ isOpen, onClose, onSave, company }: CompanyModalP
             label="Country"
             value={country}
             onChange={(c) => setCountry(c)}
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
-            Notes / Description <span className="text-slate-400 text-xs font-normal">(optional)</span>
-          </label>
-          <textarea
-            rows={2}
-            placeholder="Add brief background notes, account specifics, or internal comments..."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            disabled={isSubmitting}
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none transition-colors resize-none disabled:bg-slate-50 disabled:cursor-not-allowed"
           />
         </div>
       </form>

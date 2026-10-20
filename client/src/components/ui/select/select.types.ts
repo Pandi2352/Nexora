@@ -17,7 +17,7 @@ export interface BaseSelectProps<T = string> {
   label?: string
   error?: string
   warning?: string
-  hint?: string
+  hint?: string | ReactNode
   disabled?: boolean
   required?: boolean
   size?: SelectSize

@@ -20,7 +20,6 @@ export interface Company {
   annualRevenue?: number
   employeeCount?: string
   status: CompanyStatus
-  notes?: string
   ownerId?: string
   createdAt: string
   updatedAt: string
@@ -41,7 +40,6 @@ export interface CreateCompanyPayload {
   annualRevenue?: number
   employeeCount?: string
   status?: CompanyStatus
-  notes?: string
   ownerId?: string
 }
 
