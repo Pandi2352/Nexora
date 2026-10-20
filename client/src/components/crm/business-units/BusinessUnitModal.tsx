@@ -75,7 +75,7 @@ export function BusinessUnitModal({
       onClose={onClose}
       title={initialUnit ? 'Edit Business Unit' : 'Add Business Unit'}
       description="Define operating business divisions for lead assignment and sales reporting."
-      size="md"
+      size="lg"
       footer={
         <div className="flex items-center justify-end gap-3">
           <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>

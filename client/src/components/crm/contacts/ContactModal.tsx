@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Button, Input, Modal, Select, Textarea, type SelectOption } from '@/components/ui'
+import { Button, DatePicker, Input, Modal, Select, Textarea, type SelectOption } from '@/components/ui'
 import type { Company, Contact, CreateContactPayload, Gender, Salutation } from '@/types/crm'
 
 interface ContactModalProps {
@@ -123,7 +123,7 @@ export function ContactModal({ isOpen, onClose, onSave, contact, companies }: Co
       onClose={onClose}
       title={contact ? 'Edit Contact' : 'Add New Contact'}
       description="Record key stakeholders, procurement heads, and decision makers."
-      size="lg"
+      size="xl"
       footer={
         <div className="flex items-center justify-end gap-3">
           <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
@@ -207,11 +207,11 @@ export function ContactModal({ isOpen, onClose, onSave, contact, companies }: Co
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
-          <Input
+          <DatePicker
             label="Date of Birth"
-            type="date"
             value={dateOfBirth}
-            onChange={(e) => setDateOfBirth(e.target.value)}
+            onChange={setDateOfBirth}
+            placeholder="Select date of birth"
           />
         </div>
 
