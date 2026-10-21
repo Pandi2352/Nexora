@@ -129,6 +129,8 @@ Always import from `@/components/ui`. Never build one-off buttons, inputs or mod
 
 If a needed primitive does not exist, add it to `components/ui/` first, then use it.
 
+Also reuse: `TagInput` (ui), `FormSection` (common, bordered card for full-page forms), `useWorkspaceMembers()` (member select options + id → name map). **Create/edit forms are full pages with their own routes** (e.g. `/support/tickets/new`, `/:id/edit`), not modals; keep form state, validation and payload mapping in a `<module>-form.ts` model file and a `use<Module>Form` hook. Reference implementation: the Support module (`pages/support`, `components/support`, `server/src/modules/support`).
+
 ## 3. Strict UI design rules
 
 - **`rounded-md` everywhere:** cards, inputs, buttons, badges, modals, drawers, dropdowns, tables.

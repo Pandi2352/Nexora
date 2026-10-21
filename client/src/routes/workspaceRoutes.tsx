@@ -37,6 +37,16 @@ export const workspaceRoutes: RouteObject = {
             { path: workspaceSegments.crmActivities, element: <pages.CrmActivities /> },
             { path: workspaceSegments.crmOpportunities, element: <pages.Opportunities /> },
             { path: workspaceSegments.crmBusinessUnits, element: <pages.BusinessUnits /> },
+            { path: workspaceSegments.supportTickets, element: <pages.SupportTickets /> },
+            { path: workspaceSegments.supportTicketNew, element: <pages.SupportTicketForm /> },
+            {
+              path: `${workspaceSegments.supportTickets}/:ticketId`,
+              element: <pages.SupportTicketDetail />,
+            },
+            {
+              path: `${workspaceSegments.supportTickets}/:ticketId/edit`,
+              element: <pages.SupportTicketForm />,
+            },
             { path: workspaceSegments.activity, element: <pages.Activity /> },
             { path: workspaceSegments.account, element: <pages.Account /> },
             ...Object.values(workspaceSegments)
@@ -50,6 +60,8 @@ export const workspaceRoutes: RouteObject = {
                   segment !== workspaceSegments.crmActivities &&
                   segment !== workspaceSegments.crmOpportunities &&
                   segment !== workspaceSegments.crmBusinessUnits &&
+                  segment !== workspaceSegments.supportTickets &&
+                  segment !== workspaceSegments.supportTicketNew &&
                   segment !== workspaceSegments.settingsGeneral &&
                   segment !== workspaceSegments.settingsMembers &&
                   segment !== workspaceSegments.settingsTeams &&

@@ -15,6 +15,7 @@ import { TeamsModule } from './modules/teams/teams.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { CrmModule } from './modules/crm/crm.module';
+import { SupportModule } from './modules/support/support.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { CrmModule } from './modules/crm/crm.module';
     RolesModule,
     AuditModule,
     CrmModule,
+    SupportModule,
     HealthModule,
   ],
 })

@@ -25,3 +25,4 @@ export { ConfirmDialog, type ConfirmDialogProps } from './ConfirmDialog'
 export { DatePicker, type DatePickerProps } from './DatePicker'
 export { Pagination, usePagination, type PaginationProps, type UsePaginationOptions, type UsePaginationReturn } from './pagination'
 
+export { TagInput, type TagInputProps } from './TagInput'

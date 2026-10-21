@@ -37,6 +37,6 @@ export const quickActions: QuickAction[] = [
     label: 'New ticket',
     description: 'Log a support request',
     icon: LifeBuoy,
-    segment: s.supportTickets,
+    segment: s.supportTicketNew,
   },
 ]

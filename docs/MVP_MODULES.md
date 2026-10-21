@@ -37,8 +37,13 @@
     - Tasks, subtasks, list + Kanban, comments, labels
 11. Documents
     - Folders, upload, download, access control
-12. Support
-    - Tickets, assign, replies, internal notes, resolution
+12. Support ✅
+    - Tickets (TCK-0001 numbering), full-page create / edit form, CRM contact linking, tags
+    - Queue: status views with counts, filters (priority, category, assignee, breached), search, sort, pagination — all in the URL
+    - SLA per priority (first response + resolution): on track / at risk / breached / met / paused
+    - Assign (agents take their own; managers route), status workflow with validated transitions
+    - Replies + staff-only internal notes, "send and set status", resolve with resolution type, reopen
+    - History timeline + audit log; role permissions (`tickets:read` / `write` / `manage`) enforced on the server
 
 ## Operations
 

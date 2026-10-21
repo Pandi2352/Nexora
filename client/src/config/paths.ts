@@ -17,6 +17,7 @@ export const workspaceSegments = {
   tasks: 'tasks',
   documents: 'documents',
   supportTickets: 'support/tickets',
+  supportTicketNew: 'support/tickets/new',
   automations: 'automations',
   reports: 'reports',
   activity: 'activity',
@@ -52,4 +53,9 @@ export const paths = {
   workspaceRoot: '/workspace/:workspaceSlug',
   workspace: (slug: string, segment: WorkspaceSegment = workspaceSegments.dashboard) =>
     `/workspace/${slug}/${segment}`,
+  /** Support ticket detail and edit pages (route params, so not workspace segments). */
+  supportTicket: (slug: string, ticketId: string) =>
+    `/workspace/${slug}/support/tickets/${ticketId}`,
+  supportTicketEdit: (slug: string, ticketId: string) =>
+    `/workspace/${slug}/support/tickets/${ticketId}/edit`,
 } as const
